@@ -1,0 +1,26 @@
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+build/
+android/.gradle/
+android/local.properties
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/ephemeral/
+ios/Runner/GoogleService-Info.plist
+android/app/google-services.json
+*.iml
+.DS_Store
+
+# Local toolchain and signing files
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+ios/firebase_app_id_file.json
+android/key.properties
+*.jks
+*.keystore
+.idea/
+xcuserdata/
+*.xcuserstate
