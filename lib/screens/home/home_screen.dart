@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../app/app_services.dart';
 import '../../app/routes.dart';
 import '../../localization/app_localizations.dart';
-import '../../utils/game_constants.dart';
 import '../../widgets/menu_button.dart';
 import '../../widgets/kyrgyz_pattern.dart';
 import '../../widgets/rush_card.dart';
@@ -20,17 +19,16 @@ class HomeScreen extends StatelessWidget {
           padding: const EdgeInsets.all(24),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            const SizedBox(height: 20),
-            const Center(child: TundukEmblem()),
-            const SizedBox(height: 8),
-            Text(l10n.appTitle,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    fontSize: 42,
-                    fontWeight: FontWeight.w900,
-                    color: RushPalette.coral,
-                    letterSpacing: -1)),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
+            Center(
+              child: Image.asset(
+                'assets/branding/tash_rush_logo.png',
+                height: 190,
+                filterQuality: FilterQuality.high,
+                semanticLabel: l10n.appTitle,
+              ),
+            ),
+            const SizedBox(height: 12),
             const EthnoDivider(),
             const SizedBox(height: 24),
             RushCard(
