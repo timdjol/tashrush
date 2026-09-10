@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_en.dart';
+import 'app_localizations_ky.dart';
 import 'app_localizations_ru.dart';
 
 // ignore_for_file: type=lint
@@ -95,6 +96,7 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
+    Locale('ky'),
     Locale('ru')
   ];
 
@@ -331,6 +333,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Play games'**
   String get playGames;
+
+  /// No description provided for @tutorialTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How to play'**
+  String get tutorialTitle;
+
+  /// No description provided for @tutorialDrag.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag a piece onto free cells. It floats above your finger for a clear view.'**
+  String get tutorialDrag;
+
+  /// No description provided for @tutorialClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill a complete row or column to clear it and build a combo.'**
+  String get tutorialClear;
+
+  /// No description provided for @tutorialSpecials.
+  ///
+  /// In en, this message translates to:
+  /// **'Frozen cells need two hits. Bombs clear 3×3. Gold gives bonus points.'**
+  String get tutorialSpecials;
+
+  /// No description provided for @tutorialStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s rush!'**
+  String get tutorialStart;
 }
 
 class _AppLocalizationsDelegate
@@ -344,7 +376,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['en', 'ru'].contains(locale.languageCode);
+      <String>['en', 'ky', 'ru'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -355,6 +387,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   switch (locale.languageCode) {
     case 'en':
       return AppLocalizationsEn();
+    case 'ky':
+      return AppLocalizationsKy();
     case 'ru':
       return AppLocalizationsRu();
   }

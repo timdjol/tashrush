@@ -125,4 +125,22 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get playGames => 'Сыграть игры';
+
+  @override
+  String get tutorialTitle => 'Как играть';
+
+  @override
+  String get tutorialDrag =>
+      'Перетащите фигуру на свободные клетки. Она поднимается над пальцем и не закрывает поле.';
+
+  @override
+  String get tutorialClear =>
+      'Заполните ряд или столбец, чтобы очистить линию и увеличить комбо.';
+
+  @override
+  String get tutorialSpecials =>
+      'Лёд требует двух попаданий. Бомба очищает 3×3. Золото даёт бонусные очки.';
+
+  @override
+  String get tutorialStart => 'Начать!';
 }

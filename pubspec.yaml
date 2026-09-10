@@ -30,4 +30,4 @@ flutter:
   generate: true
   assets:
     - assets/audio/
-    - assets/branding/
+    - assets/branding/tash_rush_logo.png

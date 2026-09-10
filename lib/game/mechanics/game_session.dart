@@ -4,6 +4,7 @@ import '../../models/game_models.dart';
 import '../../utils/game_constants.dart';
 import '../board/board.dart';
 import '../pieces/piece.dart';
+import '../pieces/piece_catalog.dart';
 import '../pieces/piece_generator.dart';
 import '../scoring/scoring_engine.dart';
 import 'special_cell_engine.dart';
@@ -15,10 +16,18 @@ class MoveResult {
 }
 
 class GameSession {
-  GameSession({Board? board, PieceGenerator? generator})
-      : board = board ?? Board(),
-        _generator = generator ?? PieceGenerator() {
-    pieces = _generator.generate(this.board);
+  GameSession({
+    Board? board,
+    PieceGenerator? generator,
+    List<Piece>? initialPieces,
+    GameStats? initialStats,
+    this.continueUsed = false,
+    Duration elapsed = Duration.zero,
+  })  : startedAt = DateTime.now().subtract(elapsed),
+        board = board ?? Board(),
+        _generator = generator ?? PieceGenerator(),
+        stats = initialStats ?? const GameStats() {
+    pieces = initialPieces ?? _generator.generate(this.board);
   }
 
   final Board board;
@@ -26,9 +35,9 @@ class GameSession {
   final ScoringEngine _scoring = const ScoringEngine();
   final SpecialCellEngine _specialCells = SpecialCellEngine();
   late List<Piece> pieces;
-  GameStats stats = const GameStats();
-  bool continueUsed = false;
-  final startedAt = DateTime.now();
+  GameStats stats;
+  bool continueUsed;
+  final DateTime startedAt;
   DateTime? _pausedAt;
   Duration _pausedDuration = Duration.zero;
 
@@ -39,6 +48,33 @@ class GameSession {
   Duration get duration {
     final end = _pausedAt ?? DateTime.now();
     return end.difference(startedAt) - _pausedDuration;
+  }
+
+  Map<String, Object> toJson() => {
+        'version': 1,
+        'board': board.toJson(),
+        'pieces': pieces.map((piece) => piece.id).toList(),
+        'stats': stats.toJson(),
+        'continueUsed': continueUsed,
+        'elapsedMilliseconds': duration.inMilliseconds,
+      };
+
+  factory GameSession.fromJson(Map<String, Object?> json) {
+    if ((json['version'] as num?)?.toInt() != 1) {
+      throw const FormatException('Unsupported saved game version');
+    }
+    final pieceIds = (json['pieces'] as List<Object?>?) ?? const [];
+    return GameSession(
+      board: Board.fromJson(Map<String, Object?>.from(json['board']! as Map)),
+      initialPieces:
+          pieceIds.map((id) => PieceCatalog.byId(id! as String)).toList(),
+      initialStats:
+          GameStats.fromJson(Map<String, Object?>.from(json['stats']! as Map)),
+      continueUsed: json['continueUsed'] as bool? ?? false,
+      elapsed: Duration(
+        milliseconds: (json['elapsedMilliseconds'] as num?)?.toInt() ?? 0,
+      ),
+    );
   }
 
   void pause() {

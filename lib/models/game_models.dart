@@ -28,6 +28,13 @@ class GridPoint {
   final int row;
   final int column;
 
+  Map<String, int> toJson() => {'row': row, 'column': column};
+
+  factory GridPoint.fromJson(Map<String, Object?> json) => GridPoint(
+        (json['row'] as num).toInt(),
+        (json['column'] as num).toInt(),
+      );
+
   @override
   bool operator ==(Object other) =>
       other is GridPoint && row == other.row && column == other.column;
@@ -50,6 +57,25 @@ class GameStats {
   final int highestCombo;
   final int goldDestroyed;
   final int specialCellsDestroyed;
+
+  Map<String, int> toJson() => {
+        'score': score,
+        'lines': lines,
+        'combo': combo,
+        'highestCombo': highestCombo,
+        'goldDestroyed': goldDestroyed,
+        'specialCellsDestroyed': specialCellsDestroyed,
+      };
+
+  factory GameStats.fromJson(Map<String, Object?> json) => GameStats(
+        score: (json['score'] as num?)?.toInt() ?? 0,
+        lines: (json['lines'] as num?)?.toInt() ?? 0,
+        combo: (json['combo'] as num?)?.toInt() ?? 0,
+        highestCombo: (json['highestCombo'] as num?)?.toInt() ?? 0,
+        goldDestroyed: (json['goldDestroyed'] as num?)?.toInt() ?? 0,
+        specialCellsDestroyed:
+            (json['specialCellsDestroyed'] as num?)?.toInt() ?? 0,
+      );
 
   GameStats copyWith({
     int? score,

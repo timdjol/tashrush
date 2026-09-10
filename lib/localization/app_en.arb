@@ -38,5 +38,10 @@
   "scorePoints": "Score points",
   "reachCombo": "Reach combo",
   "clearLines": "Clear lines",
-  "playGames": "Play games"
+  "playGames": "Play games",
+  "tutorialTitle": "How to play",
+  "tutorialDrag": "Drag a piece onto free cells. It floats above your finger for a clear view.",
+  "tutorialClear": "Fill a complete row or column to clear it and build a combo.",
+  "tutorialSpecials": "Frozen cells need two hits. Bombs clear 3×3. Gold gives bonus points.",
+  "tutorialStart": "Let's rush!"
 }

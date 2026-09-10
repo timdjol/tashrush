@@ -138,4 +138,9 @@ abstract final class PieceCatalog {
       GridPoint(1, 1)
     ]),
   ];
+
+  static Piece byId(String id) => pieces.firstWhere(
+        (piece) => piece.id == id,
+        orElse: () => throw FormatException('Unknown piece: $id'),
+      );
 }

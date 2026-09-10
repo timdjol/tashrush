@@ -25,14 +25,16 @@ class DailyChallengeService {
         completed: saved['completed']! as bool,
       );
     }
-    final random = Random(key.hashCode);
+    final seed = int.parse(key.replaceAll('-', ''));
+    final random = Random(seed);
     final type =
         DailyGoalType.values[random.nextInt(DailyGoalType.values.length)];
+    final difficulty = random.nextInt(3);
     final target = switch (type) {
-      DailyGoalType.score => 5000,
-      DailyGoalType.lines => 20,
-      DailyGoalType.combo => 5,
-      DailyGoalType.specialCells => 10,
+      DailyGoalType.score => [3000, 5000, 8000][difficulty],
+      DailyGoalType.lines => [12, 20, 30][difficulty],
+      DailyGoalType.combo => [3, 5, 7][difficulty],
+      DailyGoalType.specialCells => [5, 10, 15][difficulty],
     };
     final challenge = DailyChallenge(dateKey: key, type: type, target: target);
     unawaited(save(challenge));

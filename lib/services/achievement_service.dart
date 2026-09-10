@@ -21,6 +21,16 @@ class AchievementService {
     AchievementDefinition('veteran', 100, 'games'),
   ];
   Set<String> get unlocked => storage.getStringList('achievements').toSet();
+
+  int progressFor(AchievementDefinition definition) =>
+      switch (definition.metric) {
+        'score' => storage.getInt('bestScore'),
+        'combo' => storage.getInt('highestCombo'),
+        'lines' => storage.getInt('totalLines'),
+        'games' => storage.getInt('totalGames'),
+        _ => 0,
+      };
+
   Future<void> evaluate(GameStats stats) async {
     final values = {
       'score': stats.score,

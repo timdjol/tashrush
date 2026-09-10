@@ -9,12 +9,16 @@ class ClearResult {
     this.bombsTriggered = 0,
     this.cellsDestroyed = 0,
     this.specialCellsDestroyed = 0,
+    this.affectedCells = const [],
+    this.bombCenters = const [],
   });
   final int lines;
   final int goldDestroyed;
   final int bombsTriggered;
   final int cellsDestroyed;
   final int specialCellsDestroyed;
+  final List<GridPoint> affectedCells;
+  final List<GridPoint> bombCenters;
 }
 
 class Board {
@@ -26,6 +30,30 @@ class Board {
             );
 
   final List<List<CellState>> cells;
+
+  Map<String, Object> toJson() => {
+        'cells': cells
+            .map((row) => row.map((cell) => cell.toJson()).toList())
+            .toList(),
+      };
+
+  factory Board.fromJson(Map<String, Object?> json) {
+    final rows = json['cells'] as List<Object?>?;
+    if (rows == null || rows.length != GameConstants.boardSize) {
+      throw const FormatException('Invalid saved board');
+    }
+    final cells = rows.map((row) {
+      final values = row as List<Object?>;
+      if (values.length != GameConstants.boardSize) {
+        throw const FormatException('Invalid saved board row');
+      }
+      return values
+          .map((cell) =>
+              CellState.fromJson(Map<String, Object?>.from(cell! as Map)))
+          .toList();
+    }).toList();
+    return Board(cells: cells);
+  }
 
   bool canPlace(Piece piece, int row, int column) {
     for (final point in piece.cells) {
@@ -112,6 +140,8 @@ class Board {
       bombsTriggered: bombCenters.length,
       cellsDestroyed: destroyed,
       specialCellsDestroyed: specialDestroyed,
+      affectedCells: List.unmodifiable(targets),
+      bombCenters: List.unmodifiable(bombCenters),
     );
   }
 

@@ -124,4 +124,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get playGames => 'Play games';
+
+  @override
+  String get tutorialTitle => 'How to play';
+
+  @override
+  String get tutorialDrag =>
+      'Drag a piece onto free cells. It floats above your finger for a clear view.';
+
+  @override
+  String get tutorialClear =>
+      'Fill a complete row or column to clear it and build a combo.';
+
+  @override
+  String get tutorialSpecials =>
+      'Frozen cells need two hits. Bombs clear 3×3. Gold gives bonus points.';
+
+  @override
+  String get tutorialStart => 'Let\'s rush!';
 }

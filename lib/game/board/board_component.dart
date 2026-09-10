@@ -14,14 +14,16 @@ class BoardComponent extends PositionComponent {
   Piece? previewPiece;
   GridPoint? previewOrigin;
   double _effectRemaining = 0;
-  int _bombs = 0;
+  List<GridPoint> _effectCells = const [];
+  List<GridPoint> _bombCenters = const [];
 
   double get cellSize => size.x / GameConstants.boardSize;
 
-  void playClearEffect({required int lines, required int bombs}) {
-    if (lines == 0 && bombs == 0) return;
-    _effectRemaining = bombs > 0 ? .7 : .42;
-    _bombs = bombs;
+  void playClearEffect(ClearResult clear) {
+    if (clear.lines == 0 && clear.bombsTriggered == 0) return;
+    _effectRemaining = clear.bombsTriggered > 0 ? .72 : .48;
+    _effectCells = clear.affectedCells;
+    _bombCenters = clear.bombCenters;
   }
 
   @override
@@ -80,24 +82,53 @@ class BoardComponent extends PositionComponent {
       }
     }
     if (_effectRemaining > 0) {
-      final progress = (_effectRemaining / (_bombs > 0 ? .7 : .42))
+      final hasBombs = _bombCenters.isNotEmpty;
+      final progress = (_effectRemaining / (hasBombs ? .72 : .48))
           .clamp(0.0, 1.0)
           .toDouble();
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(boardRect, const Radius.circular(24)),
-        Paint()..color = Colors.white.withAlpha((70 * progress).round()),
-      );
-      final particlePaint = Paint()
-        ..color = (_bombs > 0 ? RushPalette.coral : RushPalette.gold)
-            .withAlpha((220 * progress).round());
-      for (var index = 0; index < 12; index++) {
-        final angle = index * .524;
-        final distance = size.x * .34 * (1 - progress);
-        final center = Offset(
-          size.x / 2 + distance * math.cos(angle),
-          size.y / 2 + distance * math.sin(angle),
+      final pulse = math.sin((1 - progress) * math.pi).abs();
+      for (final point in _effectCells) {
+        final inset = 5 + (1 - progress) * cell * .32;
+        final rect = Rect.fromLTWH(
+          point.column * cell + inset,
+          point.row * cell + inset,
+          cell - inset * 2,
+          cell - inset * 2,
         );
-        canvas.drawCircle(center, 3 + 4 * progress, particlePaint);
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(rect, const Radius.circular(8)),
+          Paint()..color = RushPalette.gold.withAlpha((230 * progress).round()),
+        );
+      }
+      final particlePaint = Paint()
+        ..color = (hasBombs ? RushPalette.coral : RushPalette.gold)
+            .withAlpha((220 * progress).round());
+      final origins = _bombCenters.isEmpty
+          ? [Offset(size.x / 2, size.y / 2)]
+          : _bombCenters
+              .map((point) => Offset(
+                    (point.column + .5) * cell,
+                    (point.row + .5) * cell,
+                  ))
+              .toList();
+      for (final origin in origins) {
+        canvas.drawCircle(
+          origin,
+          cell * 1.8 * pulse,
+          Paint()
+            ..color = RushPalette.gold.withAlpha((55 * progress).round())
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 4,
+        );
+        for (var index = 0; index < 12; index++) {
+          final angle = index * math.pi / 6;
+          final distance = cell * 2.2 * (1 - progress);
+          final center = Offset(
+            origin.dx + distance * math.cos(angle),
+            origin.dy + distance * math.sin(angle),
+          );
+          canvas.drawCircle(center, 2 + 4 * progress, particlePaint);
+        }
       }
     }
   }

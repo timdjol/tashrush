@@ -25,6 +25,7 @@ void main() {
       }
       final result = board.clearCompletedLines();
       expect(result.lines, 1);
+      expect(result.affectedCells.length, 8);
       expect(board.cells[2].every((cell) => cell.isEmpty), isTrue);
     });
 
@@ -77,6 +78,8 @@ void main() {
       board.cells[3][3] = const CellState(type: CellType.gold);
       final result = board.clearCompletedLines();
       expect(result.bombsTriggered, 1);
+      expect(result.bombCenters, contains(const GridPoint(4, 4)));
+      expect(result.affectedCells, contains(const GridPoint(3, 3)));
       expect(board.cells[3][3].isEmpty, isTrue);
     });
   });

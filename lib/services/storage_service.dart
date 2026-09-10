@@ -23,6 +23,7 @@ class StorageService {
       _preferences.setString(key, value);
   Future<void> setStringList(String key, List<String> value) =>
       _preferences.setStringList(key, value);
+  Future<void> remove(String key) => _preferences.remove(key);
   Future<void> setJson(String key, Map<String, Object?> value) =>
       setString(key, jsonEncode(value));
   Map<String, Object?>? getJson(String key) {

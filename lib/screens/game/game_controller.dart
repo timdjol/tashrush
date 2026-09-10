@@ -19,7 +19,7 @@ class GameController extends ChangeNotifier {
     required this.leaderboard,
     required this.dailyService,
     this.dailyMode = false,
-  }) : session = GameSession();
+  }) : session = _restoreSession(storage, dailyService, dailyMode);
   final StorageService storage;
   final AnalyticsService analytics;
   final AchievementService achievements;
@@ -35,8 +35,44 @@ class GameController extends ChangeNotifier {
 
   int get bestScore => storage.getInt('bestScore');
 
+  static String _sessionKey(bool dailyMode) =>
+      dailyMode ? 'active_daily_game' : 'active_classic_game';
+
+  static GameSession _restoreSession(
+    StorageService storage,
+    DailyChallengeService dailyService,
+    bool dailyMode,
+  ) {
+    try {
+      final snapshot = storage.getJson(_sessionKey(dailyMode));
+      if (snapshot == null) return GameSession();
+      if (dailyMode && snapshot['date'] != dailyService.dateKey()) {
+        unawaited(storage.remove(_sessionKey(dailyMode)));
+        return GameSession();
+      }
+      return GameSession.fromJson(
+        Map<String, Object?>.from(snapshot['session']! as Map),
+      );
+    } catch (_) {
+      unawaited(storage.remove(_sessionKey(dailyMode)));
+      return GameSession();
+    }
+  }
+
+  Future<void> persist() => storage.setJson(_sessionKey(dailyMode), {
+        'date': dailyMode ? dailyService.dateKey() : '',
+        'session': session.toJson(),
+      });
+
   Future<void> start() async {
-    if (dailyMode) _dailyStartingProgress = dailyService.current().progress;
+    if (dailyMode) {
+      final challenge = dailyService.current();
+      final savedProgress = challenge.progress;
+      final sessionProgress = _sessionProgress(challenge);
+      _dailyStartingProgress = challenge.type == DailyGoalType.combo
+          ? savedProgress
+          : (savedProgress - sessionProgress).clamp(0, savedProgress);
+    }
     await analytics.event(dailyMode ? 'daily_started' : 'game_started');
   }
 
@@ -50,8 +86,9 @@ class GameController extends ChangeNotifier {
         await analytics.event('score_reached', {'score': milestone});
       }
     }
-    notifyListeners();
     if (dailyMode) await _updateDaily();
+    await persist();
+    notifyListeners();
     return true;
   }
 
@@ -59,6 +96,7 @@ class GameController extends ChangeNotifier {
     if (paused) return;
     paused = true;
     session.pause();
+    unawaited(persist());
     notifyListeners();
   }
 
@@ -66,6 +104,7 @@ class GameController extends ChangeNotifier {
     if (!paused) return;
     paused = false;
     session.resume();
+    unawaited(persist());
     notifyListeners();
   }
 
@@ -76,6 +115,7 @@ class GameController extends ChangeNotifier {
     _reportedScoreMilestones.clear();
     lastClear = const ClearResult();
     if (dailyMode) _dailyStartingProgress = dailyService.current().progress;
+    unawaited(persist());
     unawaited(analytics.event(dailyMode ? 'daily_started' : 'game_started'));
     notifyListeners();
   }
@@ -95,6 +135,7 @@ class GameController extends ChangeNotifier {
             : storage.getInt('highestCombo'));
     await leaderboard.submit(stats.score);
     await achievements.evaluate(stats);
+    await storage.remove(_sessionKey(dailyMode));
     await analytics.gameFinished(
         score: stats.score,
         durationSeconds: session.duration.inSeconds,
@@ -102,15 +143,17 @@ class GameController extends ChangeNotifier {
         highestCombo: stats.highestCombo);
   }
 
+  Future<bool> continueAfterReward() async {
+    final continued = session.continueAfterReward();
+    if (!continued) return false;
+    await persist();
+    notifyListeners();
+    return true;
+  }
+
   Future<void> _updateDaily() async {
     final challenge = dailyService.current();
-    final stats = session.stats;
-    final sessionProgress = switch (challenge.type) {
-      DailyGoalType.score => stats.score,
-      DailyGoalType.lines => stats.lines,
-      DailyGoalType.combo => stats.highestCombo,
-      DailyGoalType.specialCells => stats.specialCellsDestroyed,
-    };
+    final sessionProgress = _sessionProgress(challenge);
     final progress = challenge.type == DailyGoalType.combo
         ? (sessionProgress > _dailyStartingProgress
             ? sessionProgress
@@ -133,4 +176,11 @@ class GameController extends ChangeNotifier {
       await analytics.event('daily_completed');
     }
   }
+
+  int _sessionProgress(DailyChallenge challenge) => switch (challenge.type) {
+        DailyGoalType.score => session.stats.score,
+        DailyGoalType.lines => session.stats.lines,
+        DailyGoalType.combo => session.stats.highestCombo,
+        DailyGoalType.specialCells => session.stats.specialCellsDestroyed,
+      };
 }

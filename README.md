@@ -66,10 +66,14 @@ New `CellType` values can be added to the model and handled in `BoardComponent`/
 - A line clear refreshes the available set. Otherwise the set refreshes after all three pieces are used.
 - Game Over occurs only when none of the visible pieces fits anywhere.
 - Rewarded continue is limited to one use per session and clears up to eight occupied cells.
+- Pieces lift above the finger while dragging and snap from their visual center, including near board edges.
+- The first game includes a localized tutorial, and interrupted Classic/Daily sessions restore from the latest move.
 
 ## Local persistence
 
-`StorageService` uses SharedPreferences. It stores `bestScore`, `totalGames`, `totalLines`, `highestCombo`, achievements, audio/haptic/notification settings, locale, daily challenge and streak, and game/ad counters. Daily challenge selection is seeded with the local calendar date and changes automatically on the next date.
+`StorageService` uses SharedPreferences. It stores `bestScore`, `totalGames`, `totalLines`, `highestCombo`, achievements, audio/haptic/notification settings, locale, daily challenge and streak, game/ad counters, and the active Classic/Daily session. Daily challenge selection uses a stable calendar-date seed, changes automatically on the next date, and varies its target difficulty.
+
+The interface is localized in English, Russian, and Kyrgyz.
 
 ## Firebase setup
 
@@ -146,7 +150,7 @@ Alternatively select **Product → Archive** in Xcode and distribute from Organi
 
 ## Tests
 
-The unit suite covers placement constraints, horizontal/vertical/multi-line clearing, frozen and bomb behavior, scoring, combo growth/reset, and game-over detection:
+The unit suite covers placement constraints, horizontal/vertical/multi-line clearing, frozen and bomb behavior, scoring, combo growth/reset, game-over detection, drag coordinate snapping, fair piece generation, and saved-session restoration:
 
 ```bash
 flutter test
@@ -156,7 +160,7 @@ flutter test
 
 - Replace all AdMob test IDs and verify consent behavior in EEA test geography.
 - Add Firebase configuration files and validate Analytics DebugView/Crashlytics test crash.
-- Add real licensed audio, production icon, launch screen, screenshots, and store metadata.
+- Add real licensed audio, screenshots, and store metadata. Branded launch screens, Android adaptive/themed icons, and the iOS App Store icon are already included.
 - Configure Android signing, iOS Team/profiles, bundle versions, and privacy manifests.
 - Connect `PlaceholderPurchaseService` to Google Play Billing and StoreKit for Remove Ads.
 - Replace local leaderboard with the chosen Firebase, Play Games, or Game Center adapter.

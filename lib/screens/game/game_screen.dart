@@ -10,6 +10,7 @@ import '../../localization/app_localizations.dart';
 import '../../models/game_models.dart';
 import '../../utils/game_constants.dart';
 import '../../widgets/rush_card.dart';
+import 'drag_placement_mapper.dart';
 import 'game_controller.dart';
 import 'piece_preview.dart';
 
@@ -19,11 +20,15 @@ class GameScreen extends StatefulWidget {
   State<GameScreen> createState() => _GameScreenState();
 }
 
-class _GameScreenState extends State<GameScreen> {
+class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   final _boardKey = GlobalKey();
   late GameController controller;
   late BlockRushGame game;
   bool _ready = false;
+  Timer? _comboTimer;
+  bool _showCombo = false;
+  int _lastComboEffectScore = -1;
+  bool _pausedByLifecycle = false;
 
   @override
   void didChangeDependencies() {
@@ -40,42 +45,125 @@ class _GameScreenState extends State<GameScreen> {
       dailyMode: dailyMode,
     )..addListener(_onChanged);
     game = BlockRushGame(controller.session);
+    WidgetsBinding.instance.addObserver(this);
     unawaited(controller.start());
     _ready = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _showInitialDialogs());
   }
 
   void _onChanged() {
     game.refresh(controller.session);
+    final stats = controller.session.stats;
+    if (controller.lastClear.lines > 0 &&
+        stats.combo > 1 &&
+        stats.score != _lastComboEffectScore) {
+      _lastComboEffectScore = stats.score;
+      _comboTimer?.cancel();
+      _showCombo = true;
+      _comboTimer = Timer(const Duration(milliseconds: 950), () {
+        if (mounted) setState(() => _showCombo = false);
+      });
+    }
     if (mounted) setState(() {});
+  }
+
+  Future<void> _showInitialDialogs() async {
+    if (!mounted || !_ready) return;
+    final storage = AppServices.of(context).storage;
+    if (!storage.getBool('tutorialSeen')) {
+      controller.pause();
+      game.pauseEngine();
+      final l10n = AppLocalizations.of(context)!;
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: Text(l10n.tutorialTitle, textAlign: TextAlign.center),
+          content: Column(mainAxisSize: MainAxisSize.min, children: [
+            _TutorialStep(
+                icon: Icons.touch_app_rounded, text: l10n.tutorialDrag),
+            _TutorialStep(
+                icon: Icons.auto_awesome_rounded, text: l10n.tutorialClear),
+            _TutorialStep(
+                icon: Icons.ac_unit_rounded, text: l10n.tutorialSpecials),
+          ]),
+          actions: [
+            FilledButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(l10n.tutorialStart),
+            ),
+          ],
+        ),
+      );
+      await storage.setBool('tutorialSeen', true);
+      if (!mounted) return;
+      controller.resume();
+      game.resumeEngine();
+    }
+    if (controller.session.isGameOver && mounted) await _showGameOver();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _comboTimer?.cancel();
     if (_ready) unawaited(controller.finish());
     controller.removeListener(_onChanged);
     controller.dispose();
     super.dispose();
   }
 
-  GridPoint? _originFromGlobal(Offset global) {
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!_ready) return;
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached ||
+        state == AppLifecycleState.hidden) {
+      if (!controller.paused) {
+        _pausedByLifecycle = true;
+        controller.pause();
+        game.pauseEngine();
+      }
+      unawaited(controller.persist());
+    } else if (state == AppLifecycleState.resumed && _pausedByLifecycle) {
+      _pausedByLifecycle = false;
+      controller.resume();
+      game.resumeEngine();
+    }
+  }
+
+  GridPoint? _originFromFeedback(Offset feedbackTopLeft, Piece piece) {
     final box = _boardKey.currentContext?.findRenderObject() as RenderBox?;
     if (box == null) return null;
-    final local = box.globalToLocal(global);
-    final cellSize = box.size.width / GameConstants.boardSize;
-    return GridPoint(
-        (local.dy / cellSize).floor(), (local.dx / cellSize).floor());
+    final feedbackCenter = feedbackTopLeft +
+        Offset(
+          piece.width * _DraggablePiece.feedbackCellSize / 2,
+          piece.height * _DraggablePiece.feedbackCellSize / 2,
+        );
+    final local = box.globalToLocal(feedbackCenter);
+    return DragPlacementMapper.originForCenter(
+      localCenter: local,
+      boardSide: box.size.width,
+      piece: piece,
+    );
   }
 
   void _dragMove(DragTargetDetails<int> details) {
-    final origin = _originFromGlobal(details.offset);
-    if (origin == null || details.data >= controller.session.pieces.length) {
+    if (details.data < 0 || details.data >= controller.session.pieces.length) {
       return;
     }
-    game.preview(controller.session.pieces[details.data], origin);
+    final piece = controller.session.pieces[details.data];
+    final origin = _originFromFeedback(details.offset, piece);
+    if (origin != null) game.preview(piece, origin);
   }
 
   Future<void> _accept(DragTargetDetails<int> details) async {
-    final origin = _originFromGlobal(details.offset);
+    if (details.data < 0 || details.data >= controller.session.pieces.length) {
+      return;
+    }
+    final piece = controller.session.pieces[details.data];
+    final origin = _originFromFeedback(details.offset, piece);
     game.preview(null, null);
     if (origin == null) return;
     final services = AppServices.of(context);
@@ -85,7 +173,7 @@ class _GameScreenState extends State<GameScreen> {
       await services.audio.play('place');
       final clear = controller.lastClear;
       if (clear.lines > 0 || clear.bombsTriggered > 0) {
-        game.playClearEffect(lines: clear.lines, bombs: clear.bombsTriggered);
+        game.playClearEffect(clear);
         await services.audio
             .play(clear.bombsTriggered > 0 ? 'explosion' : 'clear');
       }
@@ -155,7 +243,7 @@ class _GameScreenState extends State<GameScreen> {
     if (action == 'continue') {
       final rewarded = await services.ads.showRewarded();
       if (rewarded) {
-        controller.session.continueAfterReward();
+        await controller.continueAfterReward();
         controller.resume();
         game.resumeEngine();
         _onChanged();
@@ -263,15 +351,52 @@ class _GameScreenState extends State<GameScreen> {
               child: Center(
                 child: AspectRatio(
                   aspectRatio: 1,
-                  child: DragTarget<int>(
-                    key: _boardKey,
-                    onMove: _dragMove,
-                    onLeave: (_) => game.preview(null, null),
-                    onAcceptWithDetails: _accept,
-                    builder: (context, _, __) => ClipRRect(
-                      borderRadius: BorderRadius.circular(24),
-                      child: GameWidget(key: ValueKey(game), game: game),
-                    ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Positioned.fill(
+                        child: DragTarget<int>(
+                          key: _boardKey,
+                          onMove: _dragMove,
+                          onLeave: (_) => game.preview(null, null),
+                          onAcceptWithDetails: _accept,
+                          builder: (context, _, __) => ClipRRect(
+                            borderRadius: BorderRadius.circular(24),
+                            child: GameWidget(key: ValueKey(game), game: game),
+                          ),
+                        ),
+                      ),
+                      IgnorePointer(
+                        child: AnimatedScale(
+                          duration: const Duration(milliseconds: 220),
+                          scale: _showCombo ? 1 : .72,
+                          child: AnimatedOpacity(
+                            duration: const Duration(milliseconds: 180),
+                            opacity: _showCombo ? 1 : 0,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: RushPalette.ink.withAlpha(218),
+                                borderRadius: BorderRadius.circular(22),
+                                border: Border.all(
+                                    color: RushPalette.gold, width: 2),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 24, vertical: 12),
+                                child: Text(
+                                  '${l10n.combo} ×${stats.combo}',
+                                  style: const TextStyle(
+                                    color: RushPalette.gold,
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -309,8 +434,9 @@ class _GameScreenState extends State<GameScreen> {
 
 class _DraggablePiece extends StatelessWidget {
   const _DraggablePiece({required this.index, required this.piece});
-  static const _feedbackCellSize = 30.0;
+  static const feedbackCellSize = 30.0;
   static const _touchTargetSize = 88.0;
+  static const _fingerLift = 64.0;
 
   final int index;
   final Piece piece;
@@ -318,13 +444,15 @@ class _DraggablePiece extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Draggable<int>(
         data: index,
+        maxSimultaneousDrags: 1,
+        rootOverlay: true,
         dragAnchorStrategy: (_, __, ___) => Offset(
-          piece.width * _feedbackCellSize / 2,
-          piece.height * _feedbackCellSize / 2,
+          piece.width * feedbackCellSize / 2,
+          piece.height * feedbackCellSize / 2 + _fingerLift,
         ),
         feedback: Material(
             color: Colors.transparent,
-            child: PiecePreview(piece: piece, cellSize: _feedbackCellSize)),
+            child: PiecePreview(piece: piece, cellSize: feedbackCellSize)),
         childWhenDragging: SizedBox.square(
           dimension: _touchTargetSize,
           child: Center(
@@ -341,6 +469,26 @@ class _DraggablePiece extends StatelessWidget {
             ),
           ),
         ),
+      );
+}
+
+class _TutorialStep extends StatelessWidget {
+  const _TutorialStep({required this.icon, required this.text});
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(children: [
+          CircleAvatar(
+            backgroundColor: RushPalette.sand,
+            foregroundColor: RushPalette.coral,
+            child: Icon(icon),
+          ),
+          const SizedBox(width: 12),
+          Expanded(child: Text(text)),
+        ]),
       );
 }
 

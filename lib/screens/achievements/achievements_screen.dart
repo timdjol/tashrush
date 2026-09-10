@@ -21,6 +21,7 @@ class AchievementsScreen extends StatelessWidget {
         itemBuilder: (context, index) {
           final item = AchievementService.definitions[index];
           final done = unlocked.contains(item.id);
+          final progress = service.progressFor(item).clamp(0, item.target);
           final l10n = AppLocalizations.of(context)!;
           final title = switch (item.id) {
             'beginner' => l10n.achievementBeginner,
@@ -53,7 +54,13 @@ class AchievementsScreen extends StatelessWidget {
                   Text(title,
                       style: const TextStyle(
                           fontSize: 17, fontWeight: FontWeight.w800)),
-                  Text('$description · ${item.target}')
+                  Text('$description · $progress / ${item.target}'),
+                  const SizedBox(height: 7),
+                  LinearProgressIndicator(
+                    value: progress / item.target,
+                    minHeight: 6,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
                 ])),
             if (done)
               const Icon(Icons.check_circle_rounded, color: RushPalette.mint),

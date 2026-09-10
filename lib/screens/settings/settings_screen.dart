@@ -45,7 +45,8 @@ class SettingsScreen extends StatelessWidget {
             value: settings.locale.languageCode,
             items: const [
               DropdownMenuItem(value: 'en', child: Text('English')),
-              DropdownMenuItem(value: 'ru', child: Text('Русский'))
+              DropdownMenuItem(value: 'ru', child: Text('Русский')),
+              DropdownMenuItem(value: 'ky', child: Text('Кыргызча')),
             ],
             onChanged: (value) {
               if (value != null) {

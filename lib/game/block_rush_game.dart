@@ -1,6 +1,7 @@
 import 'package:flame/game.dart';
 
 import '../models/game_models.dart';
+import 'board/board.dart';
 import 'board/board_component.dart';
 import 'mechanics/game_session.dart';
 import 'pieces/piece.dart';
@@ -43,7 +44,7 @@ class BlockRushGame extends FlameGame {
       ..previewOrigin = origin;
   }
 
-  void playClearEffect({required int lines, required int bombs}) {
-    if (isLoaded) boardComponent.playClearEffect(lines: lines, bombs: bombs);
+  void playClearEffect(ClearResult clear) {
+    if (isLoaded) boardComponent.playClearEffect(clear);
   }
 }
