@@ -34,6 +34,7 @@ Future<void> main() async {
     // Development works without credentials; production setup is documented.
   }
   final analytics = AnalyticsService(analytics: firebaseAnalytics);
+  final audio = AudioService();
   final purchase = PlaceholderPurchaseService();
   final ads = AdService(
     analytics: analytics,
@@ -47,10 +48,14 @@ Future<void> main() async {
     settings: SettingsService(storage),
     analytics: analytics,
     ads: ads,
-    audio: AudioService(),
+    audio: audio,
     haptics: HapticService(),
     daily: DailyChallengeService(storage),
-    achievements: AchievementService(storage, analytics),
+    achievements: AchievementService(
+      storage,
+      analytics,
+      onUnlocked: () => audio.play('achievement'),
+    ),
     leaderboard: LocalLeaderboardService(storage),
     purchase: purchase,
   ));

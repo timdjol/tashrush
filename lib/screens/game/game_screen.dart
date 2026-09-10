@@ -177,6 +177,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         await services.audio
             .play(clear.bombsTriggered > 0 ? 'explosion' : 'clear');
       }
+      if (clear.goldDestroyed > 0) {
+        await services.audio.play('gold');
+      }
       if (clear.bombsTriggered > 0) {
         await services.haptics.strong();
       } else if (controller.session.stats.combo > 0) {

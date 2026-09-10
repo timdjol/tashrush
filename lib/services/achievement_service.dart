@@ -10,9 +10,10 @@ class AchievementDefinition {
 }
 
 class AchievementService {
-  AchievementService(this.storage, this.analytics);
+  AchievementService(this.storage, this.analytics, {this.onUnlocked});
   final StorageService storage;
   final AnalyticsService analytics;
+  final Future<void> Function()? onUnlocked;
   static const definitions = [
     AchievementDefinition('beginner', 1000, 'score'),
     AchievementDefinition('master', 10000, 'score'),
@@ -44,6 +45,7 @@ class AchievementService {
           result.add(definition.id)) {
         await analytics
             .event('achievement_unlocked', {'achievement_id': definition.id});
+        await onUnlocked?.call();
       }
     }
     await storage.setStringList('achievements', result.toList());

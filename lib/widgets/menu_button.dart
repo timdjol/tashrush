@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import '../app/app_services.dart';
 import '../utils/game_constants.dart';
 
 class MenuButton extends StatelessWidget {
@@ -20,7 +23,10 @@ class MenuButton extends StatelessWidget {
             foregroundColor: RushPalette.ink,
             side: const BorderSide(color: RushPalette.coral, width: 1.2),
           ),
-          onPressed: onTap,
+          onPressed: () {
+            unawaited(AppServices.of(context).audio.play('button'));
+            onTap();
+          },
           icon: Icon(icon, color: RushPalette.coral),
           label: Text(label),
         ),
