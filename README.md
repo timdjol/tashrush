@@ -105,6 +105,17 @@ Before release:
 
 Interstitials are requested only after every third completed game, during the transition to restart. They are not shown during play or at launch. Rewarded ads remain voluntary even after future Remove Ads purchase support is added.
 
+A signed APK for testing the rewarded Continue flow with Google's test ad IDs
+can be built with:
+
+```bash
+flutter build apk --release --target-platform android-arm64 \
+  --dart-define=ALLOW_TEST_ADS=true
+```
+
+Never use `ALLOW_TEST_ADS` for a store build. Production releases must use the
+real consent service described below.
+
 ## GDPR, consent, and privacy
 
 `AdService.initializeAfterConsent()` is the only ad initialization entry point. The included `DevelopmentConsentService` allows test ads only outside release builds; release ad initialization stays disabled until this service is replaced. Before production, replace it with a service backed by Google UMP:
@@ -123,7 +134,19 @@ Do not initialize Mobile Ads before the consent service completes. Review Google
 
 ## Android release
 
-Create an upload keystore and replace the debug signing configuration in `android/app/build.gradle` with a secure release signing configuration. Never commit passwords or keystores. Then run:
+Create the upload key once. The generator uses a strong random password and
+does not print it to the terminal:
+
+```bash
+./tool/create_android_upload_key.sh
+```
+
+Back up both `android/app/upload-keystore.jks` and `android/key.properties` in
+a secure location. They are ignored by Git. Losing them can prevent future
+updates from being signed with the same upload identity. A manual configuration
+template is available at `android/key.properties.example`.
+
+Increase the build number after every published build in `pubspec.yaml`, then run:
 
 ```bash
 flutter clean
@@ -131,7 +154,10 @@ flutter pub get
 flutter build appbundle --release
 ```
 
-The bundle is written under `build/app/outputs/bundle/release/`. Test it on an internal Play Console track before production.
+The bundle is written under `build/app/outputs/bundle/release/`. Release builds
+use the upload key only when `android/key.properties` is present; they never
+fall back to the debug certificate. Test every bundle on an internal Play
+Console track before production.
 
 ## iOS archive
 

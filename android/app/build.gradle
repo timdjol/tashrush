@@ -1,6 +1,26 @@
+import java.util.Properties
+
 plugins {
     id 'com.android.application'
     id 'dev.flutter.flutter-gradle-plugin'
+}
+
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+def hasReleaseSigning = keystorePropertiesFile.exists()
+if (hasReleaseSigning) {
+    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+    hasReleaseSigning = ['storeFile', 'storePassword', 'keyAlias', 'keyPassword']
+        .every { keystoreProperties[it] }
+}
+def releaseRequested = gradle.startParameter.taskNames.any {
+    it.toLowerCase().contains('release')
+}
+if (releaseRequested && !hasReleaseSigning) {
+    throw new GradleException(
+        'Release signing is not configured. Copy android/key.properties.example ' +
+        'to android/key.properties and provide the upload-key credentials.'
+    )
 }
 
 android {
@@ -21,10 +41,22 @@ android {
         versionName flutter.versionName
     }
 
+    signingConfigs {
+        release {
+            if (hasReleaseSigning) {
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // Replace with a private upload-key signingConfig before publishing.
-            signingConfig signingConfigs.debug
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }

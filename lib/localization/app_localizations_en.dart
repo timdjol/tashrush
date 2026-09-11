@@ -96,6 +96,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adNotReady => 'Rewarded ad is not ready. Try again soon.';
 
   @override
+  String get adLoading => 'Loading ad…';
+
+  @override
+  String get retryAd => 'Retry ad';
+
+  @override
   String get you => 'You';
 
   @override

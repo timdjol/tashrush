@@ -97,6 +97,12 @@ class AppLocalizationsRu extends AppLocalizations {
       'Реклама пока не готова. Попробуйте ещё раз чуть позже.';
 
   @override
+  String get adLoading => 'Загрузка рекламы…';
+
+  @override
+  String get retryAd => 'Повторить загрузку';
+
+  @override
   String get you => 'Вы';
 
   @override

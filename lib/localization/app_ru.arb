@@ -29,6 +29,8 @@
   "specialBlocks": "Особые блоки",
   "comingSoon": "Скоро",
   "adNotReady": "Реклама пока не готова. Попробуйте ещё раз чуть позже.",
+  "adLoading": "Загрузка рекламы…",
+  "retryAd": "Повторить загрузку",
   "you": "Вы",
   "achievementBeginner": "Новичок",
   "achievementMaster": "Мастер",

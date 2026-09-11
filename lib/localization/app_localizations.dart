@@ -274,6 +274,18 @@ abstract class AppLocalizations {
   /// **'Rewarded ad is not ready. Try again soon.'**
   String get adNotReady;
 
+  /// No description provided for @adLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading ad…'**
+  String get adLoading;
+
+  /// No description provided for @retryAd.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry ad'**
+  String get retryAd;
+
   /// No description provided for @you.
   ///
   /// In en, this message translates to:

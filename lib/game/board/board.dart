@@ -31,6 +31,10 @@ class Board {
 
   final List<List<CellState>> cells;
 
+  Board copy() => Board(
+        cells: cells.map((row) => List<CellState>.of(row)).toList(),
+      );
+
   Map<String, Object> toJson() => {
         'cells': cells
             .map((row) => row.map((cell) => cell.toJson()).toList())

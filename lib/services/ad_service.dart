@@ -12,9 +12,13 @@ abstract interface class ConsentService {
   Future<bool> mayRequestAds();
 }
 
+enum RewardedAdState { unavailable, loading, ready }
+
 class DevelopmentConsentService implements ConsentService {
+  static const _allowTestAdsInRelease = bool.fromEnvironment('ALLOW_TEST_ADS');
+
   @override
-  Future<bool> mayRequestAds() async => !kReleaseMode;
+  Future<bool> mayRequestAds() async => !kReleaseMode || _allowTestAdsInRelease;
 }
 
 class AdService {
@@ -31,6 +35,8 @@ class AdService {
   RewardedAd? _rewarded;
   InterstitialAd? _interstitial;
   bool _initialized = false;
+  final ValueNotifier<RewardedAdState> rewardedState =
+      ValueNotifier(RewardedAdState.unavailable);
 
   String get _rewardedId => Platform.isAndroid
       ? 'ca-app-pub-3940256099942544/5224354917'
@@ -40,30 +46,60 @@ class AdService {
       : 'ca-app-pub-3940256099942544/4411468910';
 
   Future<void> initializeAfterConsent() async {
-    if (_initialized || kIsWeb || !await consent.mayRequestAds()) return;
-    await MobileAds.instance.initialize();
-    _initialized = true;
-    _loadRewarded();
-    _loadInterstitial();
+    if (_initialized || kIsWeb) return;
+    if (!await consent.mayRequestAds()) {
+      rewardedState.value = RewardedAdState.unavailable;
+      return;
+    }
+    try {
+      await MobileAds.instance.initialize();
+      _initialized = true;
+      _loadRewarded();
+      _loadInterstitial();
+    } catch (_) {
+      rewardedState.value = RewardedAdState.unavailable;
+    }
   }
 
   void _loadRewarded() {
+    if (!_initialized ||
+        rewardedState.value == RewardedAdState.loading ||
+        _rewarded != null) {
+      return;
+    }
+    rewardedState.value = RewardedAdState.loading;
     unawaited(RewardedAd.load(
       adUnitId: _rewardedId,
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
-        onAdLoaded: (ad) => _rewarded = ad,
-        onAdFailedToLoad: (_) => _rewarded = null,
+        onAdLoaded: (ad) {
+          _rewarded = ad;
+          rewardedState.value = RewardedAdState.ready;
+        },
+        onAdFailedToLoad: (_) {
+          _rewarded = null;
+          rewardedState.value = RewardedAdState.unavailable;
+        },
       ),
     ));
+  }
+
+  void retryRewarded() {
+    if (_initialized) {
+      _loadRewarded();
+    } else {
+      unawaited(initializeAfterConsent());
+    }
   }
 
   Future<bool> showRewarded() async {
     final ad = _rewarded;
     if (ad == null) {
-      _loadRewarded();
+      retryRewarded();
       return false;
     }
+    _rewarded = null;
+    rewardedState.value = RewardedAdState.unavailable;
     await analytics.event('rewarded_ad_opened');
     await storage.setInt(
         'rewardedAdsOpened', storage.getInt('rewardedAdsOpened') + 1);
@@ -83,11 +119,9 @@ class AdService {
       await ad.show(onUserEarnedReward: (_, __) => earned = true);
     } catch (_) {
       ad.dispose();
-      _rewarded = null;
       _loadRewarded();
       return false;
     }
-    _rewarded = null;
     await completion.future;
     if (earned) {
       await analytics.event('rewarded_ad_completed');
@@ -147,5 +181,6 @@ class AdService {
   void dispose() {
     _rewarded?.dispose();
     _interstitial?.dispose();
+    rewardedState.dispose();
   }
 }

@@ -97,6 +97,12 @@ class AppLocalizationsKy extends AppLocalizations {
       'Жарнама азырынча даяр эмес. Бир аздан кийин кайра аракет кылыңыз.';
 
   @override
+  String get adLoading => 'Жарнама жүктөлүүдө…';
+
+  @override
+  String get retryAd => 'Кайра жүктөө';
+
+  @override
   String get you => 'Сиз';
 
   @override

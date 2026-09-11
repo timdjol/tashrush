@@ -8,6 +8,7 @@ import '../../game/block_rush_game.dart';
 import '../../game/pieces/piece.dart';
 import '../../localization/app_localizations.dart';
 import '../../models/game_models.dart';
+import '../../services/ad_service.dart';
 import '../../utils/game_constants.dart';
 import '../../widgets/rush_card.dart';
 import 'drag_placement_mapper.dart';
@@ -229,9 +230,22 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
           ]),
           actions: [
             if (!controller.session.continueUsed)
-              TextButton(
-                  onPressed: () => Navigator.pop(context, 'continue'),
-                  child: Text(l10n.continueLabel)),
+              ValueListenableBuilder<RewardedAdState>(
+                valueListenable: services.ads.rewardedState,
+                builder: (context, state, _) => TextButton(
+                  onPressed: switch (state) {
+                    RewardedAdState.ready => () =>
+                        Navigator.pop(context, 'continue'),
+                    RewardedAdState.unavailable => services.ads.retryRewarded,
+                    RewardedAdState.loading => null,
+                  },
+                  child: Text(switch (state) {
+                    RewardedAdState.ready => l10n.continueLabel,
+                    RewardedAdState.loading => l10n.adLoading,
+                    RewardedAdState.unavailable => l10n.retryAd,
+                  }),
+                ),
+              ),
             TextButton(
                 onPressed: () => Navigator.pop(context, 'restart'),
                 child: Text(l10n.restart)),

@@ -29,6 +29,8 @@
   "specialBlocks": "Special blocks",
   "comingSoon": "Coming soon",
   "adNotReady": "Rewarded ad is not ready. Try again soon.",
+  "adLoading": "Loading ad…",
+  "retryAd": "Retry ad",
   "you": "You",
   "achievementBeginner": "Beginner",
   "achievementMaster": "Master",

@@ -29,6 +29,8 @@
   "specialBlocks": "Атайын блоктор",
   "comingSoon": "Жакында",
   "adNotReady": "Жарнама азырынча даяр эмес. Бир аздан кийин кайра аракет кылыңыз.",
+  "adLoading": "Жарнама жүктөлүүдө…",
+  "retryAd": "Кайра жүктөө",
   "you": "Сиз",
   "achievementBeginner": "Башталгыч",
   "achievementMaster": "Чебер",
