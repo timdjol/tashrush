@@ -17,7 +17,9 @@
   "continueLabel": "Continue",
   "removeAds": "Remove Ads — $2.99",
   "sound": "Sound",
+  "soundVolume": "Effects volume",
   "music": "Music",
+  "musicVolume": "Music volume",
   "vibration": "Vibration",
   "notifications": "Notifications",
   "language": "Language",
@@ -46,4 +48,13 @@
   "tutorialClear": "Fill a complete row or column to clear it and build a combo.",
   "tutorialSpecials": "Frozen cells need two hits. Bombs clear 3×3. Gold gives bonus points.",
   "tutorialStart": "Let's rush!"
+  ,"coins": "Coins"
+  ,"claimReward": "Claim reward"
+  ,"rewardClaimed": "Reward claimed"
+  ,"journeyThemes": "Journey themes"
+  ,"themeAlaToo": "Ala-Too"
+  ,"themeIssykKul": "Issyk-Kul"
+  ,"themeOsh": "Osh warmth"
+  ,"unlocked": "Unlocked"
+  ,"achievementUnlocked": "Achievement unlocked!"
 }

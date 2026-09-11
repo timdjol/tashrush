@@ -202,11 +202,23 @@ abstract class AppLocalizations {
   /// **'Sound'**
   String get sound;
 
+  /// No description provided for @soundVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'Effects volume'**
+  String get soundVolume;
+
   /// No description provided for @music.
   ///
   /// In en, this message translates to:
   /// **'Music'**
   String get music;
+
+  /// No description provided for @musicVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'Music volume'**
+  String get musicVolume;
 
   /// No description provided for @vibration.
   ///
@@ -375,6 +387,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Let\'s rush!'**
   String get tutorialStart;
+
+  /// No description provided for @coins.
+  ///
+  /// In en, this message translates to:
+  /// **'Coins'**
+  String get coins;
+
+  /// No description provided for @claimReward.
+  ///
+  /// In en, this message translates to:
+  /// **'Claim reward'**
+  String get claimReward;
+
+  /// No description provided for @rewardClaimed.
+  ///
+  /// In en, this message translates to:
+  /// **'Reward claimed'**
+  String get rewardClaimed;
+
+  /// No description provided for @journeyThemes.
+  ///
+  /// In en, this message translates to:
+  /// **'Journey themes'**
+  String get journeyThemes;
+
+  /// No description provided for @themeAlaToo.
+  ///
+  /// In en, this message translates to:
+  /// **'Ala-Too'**
+  String get themeAlaToo;
+
+  /// No description provided for @themeIssykKul.
+  ///
+  /// In en, this message translates to:
+  /// **'Issyk-Kul'**
+  String get themeIssykKul;
+
+  /// No description provided for @themeOsh.
+  ///
+  /// In en, this message translates to:
+  /// **'Osh warmth'**
+  String get themeOsh;
+
+  /// No description provided for @unlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlocked'**
+  String get unlocked;
+
+  /// No description provided for @achievementUnlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievement unlocked!'**
+  String get achievementUnlocked;
 }
 
 class _AppLocalizationsDelegate

@@ -4,12 +4,20 @@ import 'package:flutter/foundation.dart';
 
 import '../../game/board/board.dart';
 import '../../game/mechanics/game_session.dart';
+import '../../game/pieces/piece.dart';
 import '../../models/game_models.dart';
 import '../../services/achievement_service.dart';
 import '../../services/analytics_service.dart';
 import '../../services/daily_challenge_service.dart';
 import '../../services/leaderboard_service.dart';
 import '../../services/storage_service.dart';
+import '../../utils/game_constants.dart';
+
+class PlacementHint {
+  const PlacementHint({required this.piece, required this.origin});
+  final Piece piece;
+  final GridPoint origin;
+}
 
 class GameController extends ChangeNotifier {
   GameController({
@@ -29,11 +37,28 @@ class GameController extends ChangeNotifier {
   GameSession session;
   bool paused = false;
   bool _finishedRecorded = false;
+  List<String> _newlyUnlocked = const [];
   final Set<int> _reportedScoreMilestones = {};
   ClearResult lastClear = const ClearResult();
   int _dailyStartingProgress = 0;
 
   int get bestScore => storage.getInt('bestScore');
+
+  PlacementHint? findPlacementHint() {
+    for (final piece in session.pieces) {
+      for (var row = 0; row < GameConstants.boardSize; row++) {
+        for (var column = 0; column < GameConstants.boardSize; column++) {
+          if (session.board.canPlace(piece, row, column)) {
+            return PlacementHint(
+              piece: piece,
+              origin: GridPoint(row, column),
+            );
+          }
+        }
+      }
+    }
+    return null;
+  }
 
   static String _sessionKey(bool dailyMode) =>
       dailyMode ? 'active_daily_game' : 'active_classic_game';
@@ -112,6 +137,7 @@ class GameController extends ChangeNotifier {
     session = GameSession();
     paused = false;
     _finishedRecorded = false;
+    _newlyUnlocked = const [];
     _reportedScoreMilestones.clear();
     lastClear = const ClearResult();
     if (dailyMode) _dailyStartingProgress = dailyService.current().progress;
@@ -120,8 +146,8 @@ class GameController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> finish() async {
-    if (_finishedRecorded) return;
+  Future<List<String>> finish() async {
+    if (_finishedRecorded) return _newlyUnlocked;
     _finishedRecorded = true;
     final stats = session.stats;
     final games = storage.getInt('totalGames') + 1;
@@ -134,13 +160,14 @@ class GameController extends ChangeNotifier {
             ? stats.highestCombo
             : storage.getInt('highestCombo'));
     await leaderboard.submit(stats.score);
-    await achievements.evaluate(stats);
+    _newlyUnlocked = await achievements.evaluate(stats);
     await storage.remove(_sessionKey(dailyMode));
     await analytics.gameFinished(
         score: stats.score,
         durationSeconds: session.duration.inSeconds,
         lines: stats.lines,
         highestCombo: stats.highestCombo);
+    return _newlyUnlocked;
   }
 
   Future<bool> continueAfterReward() async {
@@ -172,6 +199,7 @@ class GameController extends ChangeNotifier {
       if (lastCompleted != today) {
         await storage.setInt('dailyStreak', streak);
         await storage.setString('lastDailyCompleted', today);
+        await dailyService.markCompleted(today);
       }
       await analytics.event('daily_completed');
     }

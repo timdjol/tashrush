@@ -60,7 +60,13 @@ class AppLocalizationsKy extends AppLocalizations {
   String get sound => 'Үндөр';
 
   @override
+  String get soundVolume => 'Эффекттердин үнү';
+
+  @override
   String get music => 'Музыка';
+
+  @override
+  String get musicVolume => 'Музыканын үнү';
 
   @override
   String get vibration => 'Титирөө';
@@ -149,4 +155,31 @@ class AppLocalizationsKy extends AppLocalizations {
 
   @override
   String get tutorialStart => 'Баштоо!';
+
+  @override
+  String get coins => 'Тыйындар';
+
+  @override
+  String get claimReward => 'Сыйлыкты алуу';
+
+  @override
+  String get rewardClaimed => 'Сыйлык алынды';
+
+  @override
+  String get journeyThemes => 'Саякат темалары';
+
+  @override
+  String get themeAlaToo => 'Ала-Тоо';
+
+  @override
+  String get themeIssykKul => 'Ысык-Көл';
+
+  @override
+  String get themeOsh => 'Оштун жылуулугу';
+
+  @override
+  String get unlocked => 'Ачылды';
+
+  @override
+  String get achievementUnlocked => 'Жетишкендик ачылды!';
 }

@@ -37,11 +37,12 @@ class BlockRushGame extends FlameGame {
     if (isLoaded) boardComponent.board = value.board;
   }
 
-  void preview(Piece? piece, GridPoint? origin) {
+  void preview(Piece? piece, GridPoint? origin, {bool isHint = false}) {
     if (!isLoaded) return;
     boardComponent
       ..previewPiece = piece
-      ..previewOrigin = origin;
+      ..previewOrigin = origin
+      ..previewIsHint = isHint;
   }
 
   void playClearEffect(ClearResult clear) {

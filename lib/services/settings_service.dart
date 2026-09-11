@@ -10,6 +10,8 @@ class SettingsService extends ChangeNotifier {
       music: _storage.getBool('music', true),
       vibration: _storage.getBool('vibration', true),
       notifications: _storage.getBool('notifications', true),
+      soundVolume: _storage.getDouble('soundVolume', .85),
+      musicVolume: _storage.getDouble('musicVolume', .55),
       locale: Locale(_storage.getString('locale') ?? 'en'),
     );
   }
@@ -23,6 +25,8 @@ class SettingsService extends ChangeNotifier {
       _storage.setBool('music', next.music),
       _storage.setBool('vibration', next.vibration),
       _storage.setBool('notifications', next.notifications),
+      _storage.setDouble('soundVolume', next.soundVolume),
+      _storage.setDouble('musicVolume', next.musicVolume),
       _storage.setString('locale', next.locale.languageCode),
     ]);
     notifyListeners();

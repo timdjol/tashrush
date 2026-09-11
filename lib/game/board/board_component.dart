@@ -13,6 +13,8 @@ class BoardComponent extends PositionComponent {
   Board board;
   Piece? previewPiece;
   GridPoint? previewOrigin;
+  bool previewIsHint = false;
+  double _clock = 0;
   double _effectRemaining = 0;
   List<GridPoint> _effectCells = const [];
   List<GridPoint> _bombCenters = const [];
@@ -29,6 +31,7 @@ class BoardComponent extends PositionComponent {
   @override
   void update(double dt) {
     super.update(dt);
+    _clock += dt;
     if (_effectRemaining > 0) _effectRemaining -= dt;
   }
 
@@ -64,12 +67,18 @@ class BoardComponent extends PositionComponent {
     final origin = previewOrigin;
     if (piece != null && origin != null) {
       final valid = board.canPlace(piece, origin.row, origin.column);
+      final hintPulse = .58 + math.sin(_clock * 4.5) * .22;
       final paint = Paint()
-        ..color = (valid ? RushPalette.mint : RushPalette.coral).withAlpha(120);
+        ..color = (valid ? RushPalette.mint : RushPalette.coral).withAlpha(
+          previewIsHint ? (150 * hintPulse).round() : 120,
+        );
       for (final point in piece.cells) {
         final row = origin.row + point.row;
         final column = origin.column + point.column;
-        if (row >= 0 && column >= 0 && row < 8 && column < 8) {
+        if (row >= 0 &&
+            column >= 0 &&
+            row < GameConstants.boardSize &&
+            column < GameConstants.boardSize) {
           canvas.drawRRect(
             RRect.fromRectAndRadius(
               Rect.fromLTWH(
@@ -160,10 +169,48 @@ class BoardComponent extends PositionComponent {
           ..strokeWidth = 1.4,
       );
     } else if (cell.type == CellType.frozen) {
+      final inner = rect.deflate(rect.width * .12);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(inner, const Radius.circular(7)),
+        Paint()
+          ..shader = const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Colors.white70, Color(0x3348BBD0), Colors.white24],
+          ).createShader(inner),
+      );
       final crackPaint = Paint()
-        ..color = Colors.white70
-        ..strokeWidth = 2;
-      canvas.drawLine(rect.topLeft, rect.bottomRight, crackPaint);
+        ..color = cell.hitsRemaining > 1 ? Colors.white70 : Colors.white
+        ..strokeWidth = cell.hitsRemaining > 1 ? 1.6 : 2.2
+        ..strokeCap = StrokeCap.round;
+      final center = rect.center;
+      if (cell.hitsRemaining > 1) {
+        for (var index = 0; index < 6; index++) {
+          final angle = index * math.pi / 3;
+          canvas.drawLine(
+            center,
+            Offset(
+              center.dx + math.cos(angle) * rect.width * .27,
+              center.dy + math.sin(angle) * rect.height * .27,
+            ),
+            crackPaint,
+          );
+        }
+        canvas.drawCircle(center, rect.width * .06, crackPaint);
+      } else {
+        final cracks = Path()
+          ..moveTo(rect.left + rect.width * .12, rect.top + rect.height * .25)
+          ..lineTo(center.dx - rect.width * .08, center.dy - rect.height * .04)
+          ..lineTo(
+              center.dx - rect.width * .22, rect.bottom - rect.height * .08)
+          ..moveTo(rect.right - rect.width * .08, rect.top + rect.height * .1)
+          ..lineTo(center.dx + rect.width * .05, center.dy)
+          ..lineTo(
+              rect.right - rect.width * .18, rect.bottom - rect.height * .1)
+          ..moveTo(center.dx + rect.width * .05, center.dy)
+          ..lineTo(rect.left + rect.width * .1, rect.bottom - rect.height * .2);
+        canvas.drawPath(cracks, crackPaint);
+      }
     } else if (cell.type == CellType.bomb) {
       canvas.drawCircle(
           rect.center, rect.width * .2, Paint()..color = RushPalette.ink);

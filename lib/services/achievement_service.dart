@@ -32,7 +32,7 @@ class AchievementService {
         _ => 0,
       };
 
-  Future<void> evaluate(GameStats stats) async {
+  Future<List<String>> evaluate(GameStats stats) async {
     final values = {
       'score': stats.score,
       'combo': stats.highestCombo,
@@ -40,14 +40,17 @@ class AchievementService {
       'games': storage.getInt('totalGames')
     };
     final result = unlocked;
+    final newlyUnlocked = <String>[];
     for (final definition in definitions) {
       if ((values[definition.metric] ?? 0) >= definition.target &&
           result.add(definition.id)) {
+        newlyUnlocked.add(definition.id);
         await analytics
             .event('achievement_unlocked', {'achievement_id': definition.id});
         await onUnlocked?.call();
       }
     }
     await storage.setStringList('achievements', result.toList());
+    return newlyUnlocked;
   }
 }

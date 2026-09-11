@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
@@ -21,15 +22,27 @@ class GameScreen extends StatefulWidget {
   State<GameScreen> createState() => _GameScreenState();
 }
 
-class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
+class _GameScreenState extends State<GameScreen>
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   final _boardKey = GlobalKey();
   late GameController controller;
   late BlockRushGame game;
   bool _ready = false;
   Timer? _comboTimer;
+  Timer? _hintTimer;
+  late final AnimationController _invalidDropController;
   bool _showCombo = false;
   int _lastComboEffectScore = -1;
   bool _pausedByLifecycle = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _invalidDropController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 380),
+    );
+  }
 
   @override
   void didChangeDependencies() {
@@ -102,12 +115,15 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       game.resumeEngine();
     }
     if (controller.session.isGameOver && mounted) await _showGameOver();
+    if (mounted && !controller.session.isGameOver) _scheduleHint();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _comboTimer?.cancel();
+    _hintTimer?.cancel();
+    _invalidDropController.dispose();
     if (_ready) unawaited(controller.finish());
     controller.removeListener(_onChanged);
     controller.dispose();
@@ -131,6 +147,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       _pausedByLifecycle = false;
       controller.resume();
       game.resumeEngine();
+      _scheduleHint();
     }
   }
 
@@ -151,6 +168,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   }
 
   void _dragMove(DragTargetDetails<int> details) {
+    _hintTimer?.cancel();
     if (details.data < 0 || details.data >= controller.session.pieces.length) {
       return;
     }
@@ -160,13 +178,17 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _accept(DragTargetDetails<int> details) async {
+    _hintTimer?.cancel();
     if (details.data < 0 || details.data >= controller.session.pieces.length) {
       return;
     }
     final piece = controller.session.pieces[details.data];
     final origin = _originFromFeedback(details.offset, piece);
     game.preview(null, null);
-    if (origin == null) return;
+    if (origin == null) {
+      _showInvalidDrop();
+      return;
+    }
     final services = AppServices.of(context);
     final placed =
         await controller.place(details.data, origin.row, origin.column);
@@ -175,6 +197,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       final clear = controller.lastClear;
       if (clear.lines > 0 || clear.bombsTriggered > 0) {
         game.playClearEffect(clear);
+        if (clear.bombsTriggered > 0) {
+          unawaited(services.audio.duckFor(const Duration(milliseconds: 900)));
+        }
         await services.audio
             .play(clear.bombsTriggered > 0 ? 'explosion' : 'clear');
       }
@@ -195,7 +220,39 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         await services.haptics.strong();
         await _showGameOver();
       }
+      _scheduleHint();
+    } else {
+      _showInvalidDrop();
     }
+  }
+
+  void _showInvalidDrop() {
+    game.preview(null, null);
+    _invalidDropController.forward(from: 0);
+    unawaited(AppServices.of(context).haptics.light());
+    _scheduleHint();
+  }
+
+  void _scheduleHint() {
+    _hintTimer?.cancel();
+    if (!_ready || controller.paused || controller.session.isGameOver) return;
+    _hintTimer = Timer(const Duration(seconds: 8), () {
+      if (!mounted || controller.paused) return;
+      final hint = controller.findPlacementHint();
+      if (hint != null) {
+        game.preview(hint.piece, hint.origin, isHint: true);
+      }
+    });
+  }
+
+  void _dragStarted() {
+    _hintTimer?.cancel();
+    game.preview(null, null);
+  }
+
+  void _dragEnded(DraggableDetails details) {
+    if (!details.wasAccepted) _showInvalidDrop();
+    _scheduleHint();
   }
 
   Future<void> _showGameOver() async {
@@ -204,6 +261,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     final l10n = AppLocalizations.of(context)!;
     final services = AppServices.of(context);
     final stats = controller.session.stats;
+    _hintTimer?.cancel();
+    game.preview(null, null);
+    await services.audio.setDucked(true);
     await services.audio.play('game_over');
     if (!mounted) return;
     final action = await showDialog<String>(
@@ -256,6 +316,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         ),
       ),
     );
+    await services.audio.setDucked(false);
     if (!mounted) return;
     if (action == 'continue') {
       final rewarded = await services.ads.showRewarded();
@@ -271,7 +332,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         await _showGameOver();
       }
     } else if (action == 'restart') {
-      await controller.finish();
+      final unlocked = await controller.finish();
+      await _showAchievementAnnouncements(unlocked);
+      services.progression.refresh();
       final games = services.storage.getInt('totalGames');
       if (games > 0 && games % GameConstants.interstitialEveryGames == 0) {
         await services.ads.showInterstitial();
@@ -279,13 +342,18 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       controller.restart();
       game.resumeEngine();
     } else if (action == 'home' && mounted) {
-      await controller.finish();
+      final unlocked = await controller.finish();
+      await _showAchievementAnnouncements(unlocked);
+      services.progression.refresh();
       if (!mounted) return;
       Navigator.pop(context);
     }
   }
 
   Future<void> _pause() async {
+    _hintTimer?.cancel();
+    game.preview(null, null);
+    final progression = AppServices.of(context).progression;
     controller.pause();
     game.pauseEngine();
     final l10n = AppLocalizations.of(context)!;
@@ -321,16 +389,22 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       if (!mounted) return;
       controller.resume();
       game.resumeEngine();
+      _scheduleHint();
       return;
     }
     if (action == 'restart') {
-      await controller.finish();
+      final unlocked = await controller.finish();
+      await _showAchievementAnnouncements(unlocked);
+      progression.refresh();
       controller.restart();
       game.resumeEngine();
+      _scheduleHint();
       return;
     }
     if (action == 'home') {
-      await controller.finish();
+      final unlocked = await controller.finish();
+      await _showAchievementAnnouncements(unlocked);
+      progression.refresh();
       if (mounted) {
         Navigator.pop(context);
       }
@@ -338,6 +412,34 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     }
     controller.resume();
     game.resumeEngine();
+    _scheduleHint();
+  }
+
+  Future<void> _showAchievementAnnouncements(List<String> ids) async {
+    if (!mounted || ids.isEmpty) return;
+    final l10n = AppLocalizations.of(context)!;
+    final names = ids.map((id) => switch (id) {
+          'beginner' => l10n.achievementBeginner,
+          'master' => l10n.achievementMaster,
+          'combo_king' => l10n.achievementComboKing,
+          'line_crusher' => l10n.achievementLineCrusher,
+          _ => l10n.achievementVeteran,
+        });
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: const Icon(Icons.emoji_events_rounded,
+            color: RushPalette.gold, size: 48),
+        title: Text(l10n.achievementUnlocked),
+        content: Text(names.join('\n'), textAlign: TextAlign.center),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -366,54 +468,94 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
             const SizedBox(height: 12),
             Expanded(
               child: Center(
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Positioned.fill(
-                        child: DragTarget<int>(
-                          key: _boardKey,
-                          onMove: _dragMove,
-                          onLeave: (_) => game.preview(null, null),
-                          onAcceptWithDetails: _accept,
-                          builder: (context, _, __) => ClipRRect(
-                            borderRadius: BorderRadius.circular(24),
-                            child: GameWidget(key: ValueKey(game), game: game),
+                child: AnimatedBuilder(
+                  animation: _invalidDropController,
+                  builder: (context, child) {
+                    final progress = _invalidDropController.value;
+                    final offset =
+                        math.sin(progress * math.pi * 6) * (1 - progress) * 9;
+                    return Transform.translate(
+                      offset: Offset(offset, 0),
+                      child: child,
+                    );
+                  },
+                  child: AspectRatio(
+                    aspectRatio: 1,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Positioned.fill(
+                          child: DragTarget<int>(
+                            key: _boardKey,
+                            onMove: _dragMove,
+                            onLeave: (_) => game.preview(null, null),
+                            onAcceptWithDetails: _accept,
+                            builder: (context, _, __) => ClipRRect(
+                              borderRadius: BorderRadius.circular(24),
+                              child:
+                                  GameWidget(key: ValueKey(game), game: game),
+                            ),
                           ),
                         ),
-                      ),
-                      IgnorePointer(
-                        child: AnimatedScale(
-                          duration: const Duration(milliseconds: 220),
-                          scale: _showCombo ? 1 : .72,
-                          child: AnimatedOpacity(
-                            duration: const Duration(milliseconds: 180),
-                            opacity: _showCombo ? 1 : 0,
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: RushPalette.ink.withAlpha(218),
-                                borderRadius: BorderRadius.circular(22),
-                                border: Border.all(
-                                    color: RushPalette.gold, width: 2),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 24, vertical: 12),
-                                child: Text(
-                                  '${l10n.combo} ×${stats.combo}',
-                                  style: const TextStyle(
-                                    color: RushPalette.gold,
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w900,
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: FadeTransition(
+                              opacity: TweenSequence<double>([
+                                TweenSequenceItem(
+                                  tween: Tween<double>(begin: 0, end: .9)
+                                      .chain(CurveTween(curve: Curves.easeOut)),
+                                  weight: 30,
+                                ),
+                                TweenSequenceItem(
+                                  tween: Tween<double>(begin: .9, end: 0)
+                                      .chain(CurveTween(curve: Curves.easeIn)),
+                                  weight: 70,
+                                ),
+                              ]).animate(_invalidDropController),
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(24),
+                                  border: Border.all(
+                                    color: RushPalette.coral,
+                                    width: 4,
                                   ),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                        IgnorePointer(
+                          child: AnimatedScale(
+                            duration: const Duration(milliseconds: 220),
+                            scale: _showCombo ? 1 : .72,
+                            child: AnimatedOpacity(
+                              duration: const Duration(milliseconds: 180),
+                              opacity: _showCombo ? 1 : 0,
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: RushPalette.ink.withAlpha(218),
+                                  borderRadius: BorderRadius.circular(22),
+                                  border: Border.all(
+                                      color: RushPalette.gold, width: 2),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 24, vertical: 12),
+                                  child: Text(
+                                    '${l10n.combo} ×${stats.combo}',
+                                    style: const TextStyle(
+                                      color: RushPalette.gold,
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -437,8 +579,11 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                           index < controller.session.pieces.length;
                           index++)
                         _DraggablePiece(
-                            index: index,
-                            piece: controller.session.pieces[index]),
+                          index: index,
+                          piece: controller.session.pieces[index],
+                          onDragStarted: _dragStarted,
+                          onDragEnd: _dragEnded,
+                        ),
                     ]),
               ),
             ),
@@ -450,19 +595,28 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
 }
 
 class _DraggablePiece extends StatelessWidget {
-  const _DraggablePiece({required this.index, required this.piece});
+  const _DraggablePiece({
+    required this.index,
+    required this.piece,
+    required this.onDragStarted,
+    required this.onDragEnd,
+  });
   static const feedbackCellSize = 30.0;
   static const _touchTargetSize = 88.0;
   static const _fingerLift = 64.0;
 
   final int index;
   final Piece piece;
+  final VoidCallback onDragStarted;
+  final DragEndCallback onDragEnd;
 
   @override
   Widget build(BuildContext context) => Draggable<int>(
         data: index,
         maxSimultaneousDrags: 1,
         rootOverlay: true,
+        onDragStarted: onDragStarted,
+        onDragEnd: onDragEnd,
         dragAnchorStrategy: (_, __, ___) => Offset(
           piece.width * feedbackCellSize / 2,
           piece.height * feedbackCellSize / 2 + _fingerLift,

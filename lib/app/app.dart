@@ -19,6 +19,7 @@ import '../services/daily_challenge_service.dart';
 import '../services/haptic_service.dart';
 import '../services/leaderboard_service.dart';
 import '../services/purchase_service.dart';
+import '../services/progression_service.dart';
 import '../services/settings_service.dart';
 import '../services/storage_service.dart';
 import '../utils/game_constants.dart';
@@ -26,7 +27,7 @@ import '../widgets/kyrgyz_pattern.dart';
 import 'app_services.dart';
 import 'routes.dart';
 
-class TashRushApp extends StatelessWidget {
+class TashRushApp extends StatefulWidget {
   const TashRushApp({
     required this.storage,
     required this.settings,
@@ -38,6 +39,7 @@ class TashRushApp extends StatelessWidget {
     required this.achievements,
     required this.leaderboard,
     required this.purchase,
+    required this.progression,
     super.key,
   });
   final StorageService storage;
@@ -50,6 +52,45 @@ class TashRushApp extends StatelessWidget {
   final AchievementService achievements;
   final LeaderboardService leaderboard;
   final PurchaseService purchase;
+  final ProgressionService progression;
+
+  @override
+  State<TashRushApp> createState() => _TashRushAppState();
+}
+
+class _TashRushAppState extends State<TashRushApp> with WidgetsBindingObserver {
+  StorageService get storage => widget.storage;
+  SettingsService get settings => widget.settings;
+  AnalyticsService get analytics => widget.analytics;
+  AdService get ads => widget.ads;
+  AudioService get audio => widget.audio;
+  HapticService get haptics => widget.haptics;
+  DailyChallengeService get daily => widget.daily;
+  AchievementService get achievements => widget.achievements;
+  LeaderboardService get leaderboard => widget.leaderboard;
+  PurchaseService get purchase => widget.purchase;
+  ProgressionService get progression => widget.progression;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(audio.resumeAfterLifecycle());
+    } else {
+      unawaited(audio.pauseForLifecycle());
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) => AppServices(
@@ -63,11 +104,15 @@ class TashRushApp extends StatelessWidget {
         achievements: achievements,
         leaderboard: leaderboard,
         purchase: purchase,
+        progression: progression,
         child: AnimatedBuilder(
-          animation: settings,
+          animation: Listenable.merge([settings, progression]),
           builder: (context, _) {
+            final journeyTheme = progression.selected;
             audio.enabled = settings.value.sound;
             audio.musicEnabled = settings.value.music;
+            audio.effectsVolume = settings.value.soundVolume;
+            audio.musicVolume = settings.value.musicVolume;
             unawaited(audio.syncMusicPreference());
             haptics.enabled = settings.value.vibration;
             return MaterialApp(
@@ -85,8 +130,8 @@ class TashRushApp extends StatelessWidget {
                 useMaterial3: true,
                 scaffoldBackgroundColor: Colors.transparent,
                 colorScheme: ColorScheme.fromSeed(
-                  seedColor: RushPalette.coral,
-                  primary: RushPalette.coral,
+                  seedColor: journeyTheme.accent,
+                  primary: journeyTheme.accent,
                   secondary: RushPalette.gold,
                   surface: RushPalette.surface,
                   brightness: Brightness.light,
@@ -167,6 +212,9 @@ class TashRushApp extends StatelessWidget {
                 ),
               ),
               builder: (context, child) => KyrgyzPatternBackground(
+                canvasColor: journeyTheme.canvas,
+                sandColor: journeyTheme.sand,
+                accentColor: journeyTheme.accent,
                 child: child ?? const SizedBox.shrink(),
               ),
               routes: {

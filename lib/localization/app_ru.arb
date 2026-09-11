@@ -17,7 +17,9 @@
   "continueLabel": "Продолжить",
   "removeAds": "Убрать рекламу — $2.99",
   "sound": "Звуки",
+  "soundVolume": "Громкость эффектов",
   "music": "Музыка",
+  "musicVolume": "Громкость музыки",
   "vibration": "Вибрация",
   "notifications": "Уведомления",
   "language": "Язык",
@@ -46,4 +48,13 @@
   "tutorialClear": "Заполните ряд или столбец, чтобы очистить линию и увеличить комбо.",
   "tutorialSpecials": "Лёд требует двух попаданий. Бомба очищает 3×3. Золото даёт бонусные очки.",
   "tutorialStart": "Начать!"
+  ,"coins": "Монеты"
+  ,"claimReward": "Забрать награду"
+  ,"rewardClaimed": "Награда получена"
+  ,"journeyThemes": "Темы путешествия"
+  ,"themeAlaToo": "Ала-Тоо"
+  ,"themeIssykKul": "Иссык-Куль"
+  ,"themeOsh": "Тепло Оша"
+  ,"unlocked": "Открыто"
+  ,"achievementUnlocked": "Достижение открыто!"
 }

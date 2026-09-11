@@ -41,6 +41,8 @@ class HomeScreen extends StatelessWidget {
                   _Metric(
                       label: l10n.dailyStreak,
                       value: '${storage.getInt('dailyStreak')}'),
+                  _Metric(
+                      label: l10n.coins, value: '${storage.getInt('coins')}'),
                 ])),
             const SizedBox(height: 24),
             FilledButton.icon(

@@ -15,6 +15,7 @@ import 'services/daily_challenge_service.dart';
 import 'services/haptic_service.dart';
 import 'services/leaderboard_service.dart';
 import 'services/purchase_service.dart';
+import 'services/progression_service.dart';
 import 'services/settings_service.dart';
 import 'services/storage_service.dart';
 
@@ -35,6 +36,7 @@ Future<void> main() async {
   }
   final analytics = AnalyticsService(analytics: firebaseAnalytics);
   final audio = AudioService();
+  await audio.initialize();
   final purchase = PlaceholderPurchaseService();
   final ads = AdService(
     analytics: analytics,
@@ -58,5 +60,6 @@ Future<void> main() async {
     ),
     leaderboard: LocalLeaderboardService(storage),
     purchase: purchase,
+    progression: ProgressionService(storage),
   ));
 }

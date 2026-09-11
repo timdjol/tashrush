@@ -60,7 +60,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sound => 'Sound';
 
   @override
+  String get soundVolume => 'Effects volume';
+
+  @override
   String get music => 'Music';
+
+  @override
+  String get musicVolume => 'Music volume';
 
   @override
   String get vibration => 'Vibration';
@@ -148,4 +154,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tutorialStart => 'Let\'s rush!';
+
+  @override
+  String get coins => 'Coins';
+
+  @override
+  String get claimReward => 'Claim reward';
+
+  @override
+  String get rewardClaimed => 'Reward claimed';
+
+  @override
+  String get journeyThemes => 'Journey themes';
+
+  @override
+  String get themeAlaToo => 'Ala-Too';
+
+  @override
+  String get themeIssykKul => 'Issyk-Kul';
+
+  @override
+  String get themeOsh => 'Osh warmth';
+
+  @override
+  String get unlocked => 'Unlocked';
+
+  @override
+  String get achievementUnlocked => 'Achievement unlocked!';
 }

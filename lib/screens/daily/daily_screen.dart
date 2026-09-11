@@ -18,7 +18,10 @@ class DailyScreen extends StatefulWidget {
 class _DailyScreenState extends State<DailyScreen> {
   @override
   Widget build(BuildContext context) {
-    final challenge = AppServices.of(context).daily.current();
+    final services = AppServices.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final daily = services.daily;
+    final challenge = daily.current();
     final l10n = AppLocalizations.of(context)!;
     final label = switch (challenge.type) {
       DailyGoalType.score => '${l10n.score}: ${challenge.target}',
@@ -40,6 +43,11 @@ class _DailyScreenState extends State<DailyScreen> {
           const SizedBox(height: 12),
           const EthnoDivider(),
           const SizedBox(height: 24),
+          _StreakCalendar(
+            completedDates: daily.completedDates,
+            today: DateTime.now(),
+          ),
+          const SizedBox(height: 16),
           RushCard(
               child: Column(children: [
             Text(challenge.dateKey,
@@ -65,11 +73,28 @@ class _DailyScreenState extends State<DailyScreen> {
                       style: const TextStyle(
                           color: RushPalette.mint,
                           fontWeight: FontWeight.w800))),
+            if (challenge.completed && daily.rewardClaimed(challenge))
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text('✓ ${l10n.rewardClaimed}'),
+              ),
           ])),
           const Spacer(),
           FilledButton.icon(
             onPressed: challenge.completed
-                ? null
+                ? (daily.rewardClaimed(challenge)
+                    ? null
+                    : () async {
+                        final reward = await daily.claimReward(challenge);
+                        services.progression.refresh();
+                        await services.audio.play('achievement');
+                        await services.haptics.medium();
+                        if (!mounted) return;
+                        messenger.showSnackBar(
+                          SnackBar(content: Text('+ $reward ${l10n.coins}')),
+                        );
+                        setState(() {});
+                      })
                 : () async {
                     await Navigator.pushNamed(
                       context,
@@ -78,10 +103,62 @@ class _DailyScreenState extends State<DailyScreen> {
                     );
                     if (mounted) setState(() {});
                   },
-            icon: const Icon(Icons.play_arrow_rounded),
-            label: Text(l10n.play),
+            icon: Icon(challenge.completed
+                ? Icons.card_giftcard_rounded
+                : Icons.play_arrow_rounded),
+            label: Text(challenge.completed
+                ? '${l10n.claimReward} · ${daily.rewardFor(challenge)}'
+                : l10n.play),
           ),
         ]),
+      ),
+    );
+  }
+}
+
+class _StreakCalendar extends StatelessWidget {
+  const _StreakCalendar({
+    required this.completedDates,
+    required this.today,
+  });
+  final Set<String> completedDates;
+  final DateTime today;
+
+  String _key(DateTime date) =>
+      '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+
+  @override
+  Widget build(BuildContext context) {
+    final days = List.generate(
+      7,
+      (index) => today.subtract(Duration(days: 6 - index)),
+    );
+    return RushCard(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          for (final day in days)
+            Column(children: [
+              Text('${day.day}', style: Theme.of(context).textTheme.labelSmall),
+              const SizedBox(height: 5),
+              CircleAvatar(
+                radius: 15,
+                backgroundColor: completedDates.contains(_key(day))
+                    ? RushPalette.mint
+                    : RushPalette.sand,
+                child: Icon(
+                  completedDates.contains(_key(day))
+                      ? Icons.check_rounded
+                      : Icons.circle_outlined,
+                  size: 16,
+                  color: completedDates.contains(_key(day))
+                      ? Colors.white
+                      : RushPalette.gold,
+                ),
+              ),
+            ]),
+        ],
       ),
     );
   }

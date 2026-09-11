@@ -60,7 +60,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get sound => 'Звуки';
 
   @override
+  String get soundVolume => 'Громкость эффектов';
+
+  @override
   String get music => 'Музыка';
+
+  @override
+  String get musicVolume => 'Громкость музыки';
 
   @override
   String get vibration => 'Вибрация';
@@ -149,4 +155,31 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get tutorialStart => 'Начать!';
+
+  @override
+  String get coins => 'Монеты';
+
+  @override
+  String get claimReward => 'Забрать награду';
+
+  @override
+  String get rewardClaimed => 'Награда получена';
+
+  @override
+  String get journeyThemes => 'Темы путешествия';
+
+  @override
+  String get themeAlaToo => 'Ала-Тоо';
+
+  @override
+  String get themeIssykKul => 'Иссык-Куль';
+
+  @override
+  String get themeOsh => 'Тепло Оша';
+
+  @override
+  String get unlocked => 'Открыто';
+
+  @override
+  String get achievementUnlocked => 'Достижение открыто!';
 }

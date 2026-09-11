@@ -5,33 +5,43 @@ import 'package:flutter/material.dart';
 import '../utils/game_constants.dart';
 
 class KyrgyzPatternBackground extends StatelessWidget {
-  const KyrgyzPatternBackground({required this.child, super.key});
+  const KyrgyzPatternBackground({
+    required this.child,
+    this.canvasColor = RushPalette.canvas,
+    this.sandColor = RushPalette.sand,
+    this.accentColor = RushPalette.coral,
+    super.key,
+  });
 
   final Widget child;
+  final Color canvasColor;
+  final Color sandColor;
+  final Color accentColor;
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [RushPalette.canvas, RushPalette.sand],
+            colors: [canvasColor, sandColor],
           ),
         ),
         child: CustomPaint(
-          painter: const KyrgyzPatternPainter(),
+          painter: KyrgyzPatternPainter(accentColor: accentColor),
           child: child,
         ),
       );
 }
 
 class KyrgyzPatternPainter extends CustomPainter {
-  const KyrgyzPatternPainter();
+  const KyrgyzPatternPainter({this.accentColor = RushPalette.coral});
+  final Color accentColor;
 
   @override
   void paint(Canvas canvas, Size size) {
     final red = Paint()
-      ..color = RushPalette.coral.withAlpha(24)
+      ..color = accentColor.withAlpha(28)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
     final gold = Paint()
@@ -95,7 +105,8 @@ class KyrgyzPatternPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant KyrgyzPatternPainter oldDelegate) => false;
+  bool shouldRepaint(covariant KyrgyzPatternPainter oldDelegate) =>
+      accentColor != oldDelegate.accentColor;
 }
 
 class TundukEmblem extends StatelessWidget {

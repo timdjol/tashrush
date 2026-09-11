@@ -8,6 +8,7 @@ import '../services/daily_challenge_service.dart';
 import '../services/haptic_service.dart';
 import '../services/leaderboard_service.dart';
 import '../services/purchase_service.dart';
+import '../services/progression_service.dart';
 import '../services/settings_service.dart';
 import '../services/storage_service.dart';
 
@@ -23,6 +24,7 @@ class AppServices extends InheritedWidget {
     required this.achievements,
     required this.leaderboard,
     required this.purchase,
+    required this.progression,
     required super.child,
     super.key,
   });
@@ -36,10 +38,11 @@ class AppServices extends InheritedWidget {
   final AchievementService achievements;
   final LeaderboardService leaderboard;
   final PurchaseService purchase;
+  final ProgressionService progression;
 
   static AppServices of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<AppServices>()!;
   @override
   bool updateShouldNotify(AppServices oldWidget) =>
-      settings != oldWidget.settings;
+      settings != oldWidget.settings || progression != oldWidget.progression;
 }

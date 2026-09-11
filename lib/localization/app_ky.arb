@@ -17,7 +17,9 @@
   "continueLabel": "Улантуу",
   "removeAds": "Жарнаманы өчүрүү — $2.99",
   "sound": "Үндөр",
+  "soundVolume": "Эффекттердин үнү",
   "music": "Музыка",
+  "musicVolume": "Музыканын үнү",
   "vibration": "Титирөө",
   "notifications": "Билдирмелер",
   "language": "Тил",
@@ -46,4 +48,13 @@
   "tutorialClear": "Сапты же мамычаны толтуруп, аны тазалаңыз жана комбону көбөйтүңүз.",
   "tutorialSpecials": "Музга эки сокку керек. Бомба 3×3 аймакты тазалайт. Алтын кошумча упай берет.",
   "tutorialStart": "Баштоо!"
+  ,"coins": "Тыйындар"
+  ,"claimReward": "Сыйлыкты алуу"
+  ,"rewardClaimed": "Сыйлык алынды"
+  ,"journeyThemes": "Саякат темалары"
+  ,"themeAlaToo": "Ала-Тоо"
+  ,"themeIssykKul": "Ысык-Көл"
+  ,"themeOsh": "Оштун жылуулугу"
+  ,"unlocked": "Ачылды"
+  ,"achievementUnlocked": "Жетишкендик ачылды!"
 }
