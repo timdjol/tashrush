@@ -11,9 +11,11 @@ import 'services/achievement_service.dart';
 import 'services/ad_service.dart';
 import 'services/analytics_service.dart';
 import 'services/audio_service.dart';
+import 'services/booster_service.dart';
 import 'services/daily_challenge_service.dart';
 import 'services/haptic_service.dart';
 import 'services/leaderboard_service.dart';
+import 'services/notification_service.dart';
 import 'services/purchase_service.dart';
 import 'services/progression_service.dart';
 import 'services/settings_service.dart';
@@ -37,7 +39,22 @@ Future<void> main() async {
   final analytics = AnalyticsService(analytics: firebaseAnalytics);
   final audio = AudioService();
   await audio.initialize();
-  final purchase = PlaceholderPurchaseService();
+  final purchase = StorePurchaseService(storage);
+  await purchase.initialize();
+  final settings = SettingsService(storage);
+  final notifications = NotificationService(FlutterNotificationGateway());
+  try {
+    await notifications.initialize();
+    if (settings.value.notifications) {
+      await notifications.setEnabled(
+        true,
+        settings.value.locale.languageCode,
+        requestPermission: false,
+      );
+    }
+  } catch (_) {
+    // Notifications stay optional if platform scheduling is unavailable.
+  }
   const allowReleaseTestAds = bool.fromEnvironment('ALLOW_TEST_ADS');
   final ads = AdService(
     analytics: analytics,
@@ -50,10 +67,11 @@ Future<void> main() async {
   unawaited(ads.initializeAfterConsent());
   runApp(TashRushApp(
     storage: storage,
-    settings: SettingsService(storage),
+    settings: settings,
     analytics: analytics,
     ads: ads,
     audio: audio,
+    boosters: BoosterService(storage),
     haptics: HapticService(),
     daily: DailyChallengeService(storage),
     achievements: AchievementService(
@@ -62,6 +80,7 @@ Future<void> main() async {
       onUnlocked: () => audio.play('achievement'),
     ),
     leaderboard: LocalLeaderboardService(storage),
+    notifications: notifications,
     purchase: purchase,
     progression: ProgressionService(storage),
   ));

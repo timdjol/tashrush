@@ -228,4 +228,53 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get privacyDraftNotice =>
       'Store publication requires a public privacy-policy URL and final declarations matching the enabled services.';
+
+  @override
+  String get singleCellBooster => 'Single-cell piece';
+
+  @override
+  String get shuffleBooster => 'Shuffle pieces';
+
+  @override
+  String get hammerBooster => 'Remove one occupied cell';
+
+  @override
+  String get boosterUsed => 'Power-up used';
+
+  @override
+  String get notEnoughCoins => 'Not enough coins or the action is unavailable';
+
+  @override
+  String get notificationPermissionDenied =>
+      'Notifications are disabled in system settings';
+
+  @override
+  String get removeAdsShort => 'Remove Ads';
+
+  @override
+  String get removeAdsBenefit =>
+      'Removes interstitial ads permanently. Rewarded ads remain optional.';
+
+  @override
+  String get adsRemoved => 'Ads removed';
+
+  @override
+  String get purchaseThankYou => 'Thank you for supporting Tash Rush!';
+
+  @override
+  String get buyNow => 'Buy now';
+
+  @override
+  String get restorePurchases => 'Restore purchases';
+
+  @override
+  String get purchasePending => 'Waiting for the store…';
+
+  @override
+  String get purchaseFailed =>
+      'The purchase could not be completed. Please try again.';
+
+  @override
+  String get purchaseUnavailable =>
+      'This product is not available in the store yet.';
 }

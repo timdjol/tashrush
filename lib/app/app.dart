@@ -16,9 +16,11 @@ import '../services/achievement_service.dart';
 import '../services/ad_service.dart';
 import '../services/analytics_service.dart';
 import '../services/audio_service.dart';
+import '../services/booster_service.dart';
 import '../services/daily_challenge_service.dart';
 import '../services/haptic_service.dart';
 import '../services/leaderboard_service.dart';
+import '../services/notification_service.dart';
 import '../services/purchase_service.dart';
 import '../services/progression_service.dart';
 import '../services/settings_service.dart';
@@ -35,10 +37,12 @@ class TashRushApp extends StatefulWidget {
     required this.analytics,
     required this.ads,
     required this.audio,
+    required this.boosters,
     required this.haptics,
     required this.daily,
     required this.achievements,
     required this.leaderboard,
+    required this.notifications,
     required this.purchase,
     required this.progression,
     super.key,
@@ -48,10 +52,12 @@ class TashRushApp extends StatefulWidget {
   final AnalyticsService analytics;
   final AdService ads;
   final AudioService audio;
+  final BoosterService boosters;
   final HapticService haptics;
   final DailyChallengeService daily;
   final AchievementService achievements;
   final LeaderboardService leaderboard;
+  final NotificationService notifications;
   final PurchaseService purchase;
   final ProgressionService progression;
 
@@ -65,10 +71,12 @@ class _TashRushAppState extends State<TashRushApp> with WidgetsBindingObserver {
   AnalyticsService get analytics => widget.analytics;
   AdService get ads => widget.ads;
   AudioService get audio => widget.audio;
+  BoosterService get boosters => widget.boosters;
   HapticService get haptics => widget.haptics;
   DailyChallengeService get daily => widget.daily;
   AchievementService get achievements => widget.achievements;
   LeaderboardService get leaderboard => widget.leaderboard;
+  NotificationService get notifications => widget.notifications;
   PurchaseService get purchase => widget.purchase;
   ProgressionService get progression => widget.progression;
 
@@ -90,6 +98,7 @@ class _TashRushAppState extends State<TashRushApp> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    purchase.dispose();
     super.dispose();
   }
 
@@ -100,10 +109,12 @@ class _TashRushAppState extends State<TashRushApp> with WidgetsBindingObserver {
         analytics: analytics,
         ads: ads,
         audio: audio,
+        boosters: boosters,
         haptics: haptics,
         daily: daily,
         achievements: achievements,
         leaderboard: leaderboard,
+        notifications: notifications,
         purchase: purchase,
         progression: progression,
         child: AnimatedBuilder(

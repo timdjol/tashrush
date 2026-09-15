@@ -9,7 +9,7 @@ class SettingsService extends ChangeNotifier {
       sound: _storage.getBool('sound', true),
       music: _storage.getBool('music', true),
       vibration: _storage.getBool('vibration', true),
-      notifications: _storage.getBool('notifications', true),
+      notifications: _storage.getBool('notifications', false),
       soundVolume: _storage.getDouble('soundVolume', .85),
       musicVolume: _storage.getDouble('musicVolume', .55),
       locale: Locale(_storage.getString('locale') ?? 'en'),

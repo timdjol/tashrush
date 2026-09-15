@@ -229,4 +229,51 @@ class AppLocalizationsKy extends AppLocalizations {
   @override
   String get privacyDraftNotice =>
       'Дүкөнгө чыгаруу үчүн ачык купуялык шилтемеси жана иштетилген кызматтарга туура келген акыркы декларациялар керек.';
+
+  @override
+  String get singleCellBooster => 'Бир клеткалуу блок';
+
+  @override
+  String get shuffleBooster => 'Фигураларды аралаштыруу';
+
+  @override
+  String get hammerBooster => 'Бир толгон клетканы тазалоо';
+
+  @override
+  String get boosterUsed => 'Күчөткүч колдонулду';
+
+  @override
+  String get notEnoughCoins => 'Тыйын жетишсиз же аракет жеткиликсиз';
+
+  @override
+  String get notificationPermissionDenied =>
+      'Билдирмелер системанын жөндөөлөрүндө өчүрүлгөн';
+
+  @override
+  String get removeAdsShort => 'Жарнаманы өчүрүү';
+
+  @override
+  String get removeAdsBenefit =>
+      'Барактар аралык жарнаманы түбөлүк өчүрөт. Сыйлык жарнамасы ыктыярдуу бойдон калат.';
+
+  @override
+  String get adsRemoved => 'Жарнама өчүрүлдү';
+
+  @override
+  String get purchaseThankYou => 'Tash Rush оюнун колдогонуңуз үчүн рахмат!';
+
+  @override
+  String get buyNow => 'Сатып алуу';
+
+  @override
+  String get restorePurchases => 'Сатып алууларды калыбына келтирүү';
+
+  @override
+  String get purchasePending => 'Дүкөндүн жообу күтүлүүдө…';
+
+  @override
+  String get purchaseFailed => 'Сатып алуу аяктаган жок. Кайра аракет кылыңыз.';
+
+  @override
+  String get purchaseUnavailable => 'Бул товар азырынча дүкөндө жеткиликсиз.';
 }

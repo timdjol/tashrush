@@ -1,6 +1,10 @@
 # Tash Rush
 
-Tash Rush is an original Kyrgyz-inspired cross-platform 8×8 block puzzle built with Flutter and Flame. The repository contains the playable Classic loop, deterministic Daily Challenges, special cells, local achievements and leaderboard, persisted settings and progress, rewarded continue, test AdMob configuration, and optional Firebase Analytics/Crashlytics initialization.
+Tash Rush is an original Kyrgyz-inspired cross-platform 8×8 block puzzle built with Flutter and Flame. The repository contains the playable Classic loop, deterministic Daily Challenges, special cells, coin-powered boosters, local achievements and leaderboard, daily notifications, persisted settings and progress, rewarded continue, Remove Ads billing, test AdMob configuration, and optional Firebase Analytics/Crashlytics initialization.
+
+Coins are earned from completed games and Daily Challenge rewards. They can be
+spent on a single-cell piece, a board-aware tray shuffle, or a hammer that
+removes one occupied cell. Spending and rewards are persisted locally.
 
 ## Requirements
 
@@ -105,6 +109,24 @@ Before release:
 
 Interstitials are requested only after every third completed game, during the transition to restart. They are not shown during play or at launch. Rewarded ads remain voluntary even after future Remove Ads purchase support is added.
 
+## Remove Ads purchase
+
+The app uses Flutter's `in_app_purchase` API for a non-consumable product. Create
+the same product in Google Play Console and App Store Connect with the ID
+`tash_rush_remove_ads`, or provide another configured ID at build time:
+
+```bash
+flutter build appbundle --release \
+  --dart-define=REMOVE_ADS_PRODUCT_ID=your_remove_ads_product_id
+```
+
+Use Play Console internal testing and an App Store sandbox tester to validate
+purchase and restore flows. The included verifier checks the platform receipt
+before granting the local entitlement. Before a wide production rollout,
+replace `LocalReceiptVerifier` with server-side receipt verification to protect
+the entitlement against tampered clients. A successful purchase disables only
+interstitial ads; voluntary rewarded ads remain available.
+
 A signed APK for testing the rewarded Continue flow with Google's test ad IDs
 can be built with:
 
@@ -129,6 +151,14 @@ Do not initialize Mobile Ads before the consent service completes. Review Google
 ## Audio and haptics
 
 `AudioService` expects optional MP3 files in `assets/audio`: `place.mp3`, `clear.mp3`, `combo.mp3`, `explosion.mp3`, `game_over.mp3`, `button.mp3`, and `music.mp3`. Missing placeholders are safely ignored. Haptics use selection/medium/heavy feedback and respect the vibration setting through the service integration point.
+
+## Local notifications
+
+Notifications are off by default and the system permission is requested only
+when the player enables them. Tash Rush schedules localized Daily Challenge and
+streak reminders using the device timezone. Android boot receivers restore the
+schedule after a restart. Test delivery on physical Android and iOS devices;
+simulator timing and power-saving behavior can differ from production devices.
 
 ## Android release
 
@@ -192,7 +222,8 @@ Run the local readiness audit first:
 - Add Firebase configuration files and validate Analytics DebugView/Crashlytics test crash.
 - Add real licensed audio, screenshots, and store metadata. Branded launch screens, Android adaptive/themed icons, and the iOS App Store icon are already included.
 - Configure Android signing, iOS Team/profiles, bundle versions, and privacy manifests.
-- Connect `PlaceholderPurchaseService` to Google Play Billing and StoreKit for Remove Ads.
+- Create and activate the Remove Ads non-consumable in both stores, then test purchases, cancellation, pending transactions, and restore with sandbox accounts.
+- Replace local receipt checking with server-side verification before a broad production rollout.
 - Replace local leaderboard with the chosen Firebase, Play Games, or Game Center adapter.
 - Test low-end Android devices, different iPhone sizes, offline startup, date rollover, and interrupted ads.
 - Run `flutter analyze`, `flutter test`, Android App Bundle build, and iOS archive with zero critical errors.

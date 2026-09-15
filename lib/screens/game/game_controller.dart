@@ -8,6 +8,7 @@ import '../../game/pieces/piece.dart';
 import '../../models/game_models.dart';
 import '../../services/achievement_service.dart';
 import '../../services/analytics_service.dart';
+import '../../services/booster_service.dart';
 import '../../services/daily_challenge_service.dart';
 import '../../services/leaderboard_service.dart';
 import '../../services/storage_service.dart';
@@ -26,6 +27,7 @@ class GameController extends ChangeNotifier {
     required this.achievements,
     required this.leaderboard,
     required this.dailyService,
+    required this.boosters,
     this.dailyMode = false,
   }) : session = _restoreSession(storage, dailyService, dailyMode);
   final StorageService storage;
@@ -33,6 +35,7 @@ class GameController extends ChangeNotifier {
   final AchievementService achievements;
   final LeaderboardService leaderboard;
   final DailyChallengeService dailyService;
+  final BoosterService boosters;
   final bool dailyMode;
   GameSession session;
   bool paused = false;
@@ -117,6 +120,40 @@ class GameController extends ChangeNotifier {
     return true;
   }
 
+  Future<bool> useSingleCellBooster() async {
+    if (session.pieces.isEmpty || !boosters.canAfford(BoosterType.singleCell)) {
+      return false;
+    }
+    if (!await boosters.spend(BoosterType.singleCell)) return false;
+    session.grantSingleCellPiece();
+    await persist();
+    notifyListeners();
+    return true;
+  }
+
+  Future<bool> useShuffleBooster() async {
+    if (session.pieces.isEmpty || !boosters.canAfford(BoosterType.shuffle)) {
+      return false;
+    }
+    if (!await boosters.spend(BoosterType.shuffle)) return false;
+    session.shufflePieces();
+    await persist();
+    notifyListeners();
+    return true;
+  }
+
+  Future<bool> useHammerBooster(int row, int column) async {
+    if (!session.canHammerCell(row, column) ||
+        !boosters.canAfford(BoosterType.hammer)) {
+      return false;
+    }
+    if (!await boosters.spend(BoosterType.hammer)) return false;
+    session.hammerCell(row, column);
+    await persist();
+    notifyListeners();
+    return true;
+  }
+
   void pause() {
     if (paused) return;
     paused = true;
@@ -159,6 +196,7 @@ class GameController extends ChangeNotifier {
         stats.highestCombo > storage.getInt('highestCombo')
             ? stats.highestCombo
             : storage.getInt('highestCombo'));
+    await boosters.awardForGame(score: stats.score, lines: stats.lines);
     await leaderboard.submit(
       stats.score,
       lines: stats.lines,

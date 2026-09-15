@@ -7,9 +7,11 @@ import 'package:tash_rush/services/achievement_service.dart';
 import 'package:tash_rush/services/ad_service.dart';
 import 'package:tash_rush/services/analytics_service.dart';
 import 'package:tash_rush/services/audio_service.dart';
+import 'package:tash_rush/services/booster_service.dart';
 import 'package:tash_rush/services/daily_challenge_service.dart';
 import 'package:tash_rush/services/haptic_service.dart';
 import 'package:tash_rush/services/leaderboard_service.dart';
+import 'package:tash_rush/services/notification_service.dart';
 import 'package:tash_rush/services/progression_service.dart';
 import 'package:tash_rush/services/purchase_service.dart';
 import 'package:tash_rush/services/settings_service.dart';
@@ -73,10 +75,12 @@ class TestAppServices {
       analytics: analytics,
       ads: ads,
       audio: audio,
+      boosters: BoosterService(storage),
       haptics: HapticService(),
       daily: DailyChallengeService(storage),
       achievements: AchievementService(storage, analytics),
       leaderboard: leaderboard,
+      notifications: NotificationService(const NoopNotificationGateway()),
       purchase: purchase,
       progression: ProgressionService(storage),
       child: MaterialApp(

@@ -5,6 +5,7 @@ import 'package:tash_rush/models/game_models.dart';
 import 'package:tash_rush/screens/game/game_controller.dart';
 import 'package:tash_rush/services/achievement_service.dart';
 import 'package:tash_rush/services/analytics_service.dart';
+import 'package:tash_rush/services/booster_service.dart';
 import 'package:tash_rush/services/daily_challenge_service.dart';
 import 'package:tash_rush/services/leaderboard_service.dart';
 import 'package:tash_rush/services/storage_service.dart';
@@ -22,6 +23,7 @@ void main() {
           achievements: AchievementService(storage, analytics),
           leaderboard: LocalLeaderboardService(storage),
           dailyService: daily,
+          boosters: BoosterService(storage),
         );
 
     final first = createController();

@@ -5,7 +5,7 @@ class AppSettings {
     this.sound = true,
     this.music = true,
     this.vibration = true,
-    this.notifications = true,
+    this.notifications = false,
     this.soundVolume = .85,
     this.musicVolume = .55,
     this.locale = const Locale('en'),

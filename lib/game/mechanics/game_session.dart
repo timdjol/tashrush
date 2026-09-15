@@ -105,6 +105,32 @@ class GameSession {
     return MoveResult(success: true, clear: clear);
   }
 
+  bool grantSingleCellPiece() {
+    if (pieces.isEmpty) return false;
+    pieces = [PieceCatalog.byId('single'), ...pieces.skip(1)];
+    return true;
+  }
+
+  bool shufflePieces() {
+    if (pieces.isEmpty) return false;
+    pieces = _generator.generate(board);
+    return true;
+  }
+
+  bool canHammerCell(int row, int column) =>
+      row >= 0 &&
+      column >= 0 &&
+      row < GameConstants.boardSize &&
+      column < GameConstants.boardSize &&
+      !board.cells[row][column].isEmpty;
+
+  bool hammerCell(int row, int column) {
+    if (!canHammerCell(row, column)) return false;
+    board.clearCells([GridPoint(row, column)]);
+    if (isGameOver) pieces = _generator.generate(board);
+    return true;
+  }
+
   bool continueAfterReward({Random? random}) {
     if (continueUsed) return false;
     final occupied = <GridPoint>[];

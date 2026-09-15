@@ -229,4 +229,52 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get privacyDraftNotice =>
       'Для публикации нужна публичная ссылка на политику и итоговые декларации, соответствующие включённым сервисам.';
+
+  @override
+  String get singleCellBooster => 'Одиночный блок';
+
+  @override
+  String get shuffleBooster => 'Перемешать фигуры';
+
+  @override
+  String get hammerBooster => 'Убрать одну занятую клетку';
+
+  @override
+  String get boosterUsed => 'Усилитель использован';
+
+  @override
+  String get notEnoughCoins => 'Недостаточно монет или действие недоступно';
+
+  @override
+  String get notificationPermissionDenied =>
+      'Уведомления отключены в системных настройках';
+
+  @override
+  String get removeAdsShort => 'Убрать рекламу';
+
+  @override
+  String get removeAdsBenefit =>
+      'Навсегда отключает межстраничную рекламу. Rewarded-реклама остаётся добровольной.';
+
+  @override
+  String get adsRemoved => 'Реклама отключена';
+
+  @override
+  String get purchaseThankYou => 'Спасибо за поддержку Tash Rush!';
+
+  @override
+  String get buyNow => 'Купить';
+
+  @override
+  String get restorePurchases => 'Восстановить покупки';
+
+  @override
+  String get purchasePending => 'Ожидание ответа магазина…';
+
+  @override
+  String get purchaseFailed =>
+      'Не удалось завершить покупку. Попробуйте ещё раз.';
+
+  @override
+  String get purchaseUnavailable => 'Товар пока недоступен в магазине.';
 }

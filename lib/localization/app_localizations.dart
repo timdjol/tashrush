@@ -525,6 +525,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Store publication requires a public privacy-policy URL and final declarations matching the enabled services.'**
   String get privacyDraftNotice;
+
+  /// No description provided for @singleCellBooster.
+  ///
+  /// In en, this message translates to:
+  /// **'Single-cell piece'**
+  String get singleCellBooster;
+
+  /// No description provided for @shuffleBooster.
+  ///
+  /// In en, this message translates to:
+  /// **'Shuffle pieces'**
+  String get shuffleBooster;
+
+  /// No description provided for @hammerBooster.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove one occupied cell'**
+  String get hammerBooster;
+
+  /// No description provided for @boosterUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Power-up used'**
+  String get boosterUsed;
+
+  /// No description provided for @notEnoughCoins.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough coins or the action is unavailable'**
+  String get notEnoughCoins;
+
+  /// No description provided for @notificationPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are disabled in system settings'**
+  String get notificationPermissionDenied;
+
+  /// No description provided for @removeAdsShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Ads'**
+  String get removeAdsShort;
+
+  /// No description provided for @removeAdsBenefit.
+  ///
+  /// In en, this message translates to:
+  /// **'Removes interstitial ads permanently. Rewarded ads remain optional.'**
+  String get removeAdsBenefit;
+
+  /// No description provided for @adsRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Ads removed'**
+  String get adsRemoved;
+
+  /// No description provided for @purchaseThankYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you for supporting Tash Rush!'**
+  String get purchaseThankYou;
+
+  /// No description provided for @buyNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy now'**
+  String get buyNow;
+
+  /// No description provided for @restorePurchases.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore purchases'**
+  String get restorePurchases;
+
+  /// No description provided for @purchasePending.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the store…'**
+  String get purchasePending;
+
+  /// No description provided for @purchaseFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The purchase could not be completed. Please try again.'**
+  String get purchaseFailed;
+
+  /// No description provided for @purchaseUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This product is not available in the store yet.'**
+  String get purchaseUnavailable;
 }
 
 class _AppLocalizationsDelegate

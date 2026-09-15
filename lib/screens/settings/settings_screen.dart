@@ -54,8 +54,20 @@ class SettingsScreen extends StatelessWidget {
             title: Text(l10n.notifications),
             secondary: const Icon(Icons.notifications_rounded),
             value: settings.notifications,
-            onChanged: (value) => services.settings
-                .update(settings.copyWith(notifications: value))),
+            onChanged: (value) async {
+              final enabled = await services.notifications.setEnabled(
+                value,
+                settings.locale.languageCode,
+              );
+              await services.settings.update(
+                settings.copyWith(notifications: value && enabled),
+              );
+              if (value && !enabled && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(l10n.notificationPermissionDenied)),
+                );
+              }
+            }),
         ListTile(
           leading: const Icon(Icons.language_rounded),
           title: Text(l10n.language),
@@ -66,10 +78,17 @@ class SettingsScreen extends StatelessWidget {
               DropdownMenuItem(value: 'ru', child: Text('Русский')),
               DropdownMenuItem(value: 'ky', child: Text('Кыргызча')),
             ],
-            onChanged: (value) {
+            onChanged: (value) async {
               if (value != null) {
-                services.settings
+                await services.settings
                     .update(settings.copyWith(locale: Locale(value)));
+                if (settings.notifications) {
+                  await services.notifications.setEnabled(
+                    true,
+                    value,
+                    requestPermission: false,
+                  );
+                }
               }
             },
           ),
@@ -132,8 +151,10 @@ class SettingsScreen extends StatelessWidget {
         ),
         ListTile(
           leading: const Icon(Icons.block_rounded),
-          title: Text(l10n.removeAds),
-          subtitle: Text(l10n.comingSoon),
+          title: Text(l10n.removeAdsShort),
+          subtitle: Text(services.purchase.adsRemoved
+              ? l10n.adsRemoved
+              : l10n.removeAdsBenefit),
           onTap: () => Navigator.pushNamed(context, AppRoutes.removeAds),
         ),
       ]),

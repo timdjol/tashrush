@@ -10,6 +10,7 @@ import '../../game/pieces/piece.dart';
 import '../../localization/app_localizations.dart';
 import '../../models/game_models.dart';
 import '../../services/ad_service.dart';
+import '../../services/booster_service.dart';
 import '../../utils/game_constants.dart';
 import '../../widgets/rush_card.dart';
 import 'drag_placement_mapper.dart';
@@ -34,6 +35,7 @@ class _GameScreenState extends State<GameScreen>
   bool _showCombo = false;
   int _lastComboEffectScore = -1;
   bool _pausedByLifecycle = false;
+  bool _hammerMode = false;
 
   @override
   void initState() {
@@ -56,6 +58,7 @@ class _GameScreenState extends State<GameScreen>
       achievements: services.achievements,
       leaderboard: services.leaderboard,
       dailyService: services.daily,
+      boosters: services.boosters,
       dailyMode: dailyMode,
     )..addListener(_onChanged);
     game = BlockRushGame(controller.session);
@@ -246,6 +249,7 @@ class _GameScreenState extends State<GameScreen>
   }
 
   void _dragStarted() {
+    if (_hammerMode) setState(() => _hammerMode = false);
     _hintTimer?.cancel();
     game.preview(null, null);
   }
@@ -253,6 +257,50 @@ class _GameScreenState extends State<GameScreen>
   void _dragEnded(DraggableDetails details) {
     if (!details.wasAccepted) _showInvalidDrop();
     _scheduleHint();
+  }
+
+  Future<void> _useBooster(BoosterType type) async {
+    final services = AppServices.of(context);
+    if (type == BoosterType.hammer) {
+      if (!services.boosters.canAfford(type)) {
+        _showBoosterMessage(false);
+        return;
+      }
+      setState(() => _hammerMode = !_hammerMode);
+      game.preview(null, null);
+      return;
+    }
+    final success = type == BoosterType.singleCell
+        ? await controller.useSingleCellBooster()
+        : await controller.useShuffleBooster();
+    if (!mounted) return;
+    if (success) services.progression.refresh();
+    _showBoosterMessage(success);
+  }
+
+  Future<void> _hammerTap(TapUpDetails details) async {
+    if (!_hammerMode) return;
+    final box = _boardKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null) return;
+    final local = box.globalToLocal(details.globalPosition);
+    final cell = box.size.width / GameConstants.boardSize;
+    final row = (local.dy / cell).floor();
+    final column = (local.dx / cell).floor();
+    final success = await controller.useHammerBooster(row, column);
+    if (!mounted) return;
+    if (success) {
+      _hammerMode = false;
+      AppServices.of(context).progression.refresh();
+      await AppServices.of(context).haptics.medium();
+    }
+    _showBoosterMessage(success);
+  }
+
+  void _showBoosterMessage(bool success) {
+    final l10n = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(success ? l10n.boosterUsed : l10n.notEnoughCoins)),
+    );
   }
 
   Future<void> _showGameOver() async {
@@ -485,15 +533,18 @@ class _GameScreenState extends State<GameScreen>
                       alignment: Alignment.center,
                       children: [
                         Positioned.fill(
-                          child: DragTarget<int>(
-                            key: _boardKey,
-                            onMove: _dragMove,
-                            onLeave: (_) => game.preview(null, null),
-                            onAcceptWithDetails: _accept,
-                            builder: (context, _, __) => ClipRRect(
-                              borderRadius: BorderRadius.circular(24),
-                              child:
-                                  GameWidget(key: ValueKey(game), game: game),
+                          child: GestureDetector(
+                            onTapUp: _hammerMode ? _hammerTap : null,
+                            child: DragTarget<int>(
+                              key: _boardKey,
+                              onMove: _dragMove,
+                              onLeave: (_) => game.preview(null, null),
+                              onAcceptWithDetails: _accept,
+                              builder: (context, _, __) => ClipRRect(
+                                borderRadius: BorderRadius.circular(24),
+                                child:
+                                    GameWidget(key: ValueKey(game), game: game),
+                              ),
                             ),
                           ),
                         ),
@@ -560,6 +611,45 @@ class _GameScreenState extends State<GameScreen>
                 ),
               ),
             ),
+            const SizedBox(height: 8),
+            AnimatedBuilder(
+              animation: AppServices.of(context).boosters,
+              builder: (context, _) {
+                final boosters = AppServices.of(context).boosters;
+                return Row(children: [
+                  _CoinPill(value: boosters.coins),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: _BoosterButton(
+                      icon: Icons.crop_square_rounded,
+                      price: boosters.price(BoosterType.singleCell),
+                      tooltip: l10n.singleCellBooster,
+                      onPressed: () => _useBooster(BoosterType.singleCell),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: _BoosterButton(
+                      icon: Icons.shuffle_rounded,
+                      price: boosters.price(BoosterType.shuffle),
+                      tooltip: l10n.shuffleBooster,
+                      onPressed: () => _useBooster(BoosterType.shuffle),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: _BoosterButton(
+                      icon: Icons.hardware_rounded,
+                      price: boosters.price(BoosterType.hammer),
+                      tooltip: l10n.hammerBooster,
+                      selected: _hammerMode,
+                      onPressed: () => _useBooster(BoosterType.hammer),
+                    ),
+                  ),
+                ]);
+              },
+            ),
+            const SizedBox(height: 8),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 260),
               transitionBuilder: (child, animation) => FadeTransition(
@@ -592,6 +682,61 @@ class _GameScreenState extends State<GameScreen>
       ),
     );
   }
+}
+
+class _CoinPill extends StatelessWidget {
+  const _CoinPill({required this.value});
+  final int value;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        height: 44,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          color: RushPalette.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: RushPalette.gold),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          const Icon(Icons.monetization_on_rounded,
+              color: RushPalette.gold, size: 20),
+          const SizedBox(width: 4),
+          Text('$value', style: const TextStyle(fontWeight: FontWeight.w900)),
+        ]),
+      );
+}
+
+class _BoosterButton extends StatelessWidget {
+  const _BoosterButton({
+    required this.icon,
+    required this.price,
+    required this.tooltip,
+    required this.onPressed,
+    this.selected = false,
+  });
+  final IconData icon;
+  final int price;
+  final String tooltip;
+  final VoidCallback onPressed;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) => Tooltip(
+        message: tooltip,
+        child: SizedBox(
+          height: 44,
+          child: FilledButton.tonalIcon(
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              backgroundColor: selected ? RushPalette.gold : null,
+            ),
+            onPressed: onPressed,
+            icon: Icon(icon, size: 18),
+            label: Text('$price',
+                style: const TextStyle(fontWeight: FontWeight.w800)),
+          ),
+        ),
+      );
 }
 
 class _DraggablePiece extends StatelessWidget {
