@@ -116,6 +116,21 @@ class SettingsScreen extends StatelessWidget {
           ),
         const Divider(),
         ListTile(
+          leading: const Icon(Icons.privacy_tip_outlined),
+          title: Text(l10n.privacyPolicy),
+          onTap: () => Navigator.pushNamed(context, AppRoutes.privacy),
+        ),
+        FutureBuilder<bool>(
+          future: services.ads.privacyOptionsRequired(),
+          builder: (context, snapshot) => snapshot.data == true
+              ? ListTile(
+                  leading: const Icon(Icons.policy_outlined),
+                  title: Text(l10n.privacyOptions),
+                  onTap: services.ads.showPrivacyOptions,
+                )
+              : const SizedBox.shrink(),
+        ),
+        ListTile(
           leading: const Icon(Icons.block_rounded),
           title: Text(l10n.removeAds),
           subtitle: Text(l10n.comingSoon),

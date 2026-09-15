@@ -9,6 +9,7 @@ import '../screens/daily/daily_screen.dart';
 import '../screens/game/game_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/leaderboard/leaderboard_screen.dart';
+import '../screens/privacy/privacy_screen.dart';
 import '../screens/remove_ads/remove_ads_screen.dart';
 import '../screens/settings/settings_screen.dart';
 import '../services/achievement_service.dart';
@@ -225,6 +226,7 @@ class _TashRushAppState extends State<TashRushApp> with WidgetsBindingObserver {
                 AppRoutes.leaderboard: (_) => const LeaderboardScreen(),
                 AppRoutes.settings: (_) => const SettingsScreen(),
                 AppRoutes.removeAds: (_) => const RemoveAdsScreen(),
+                AppRoutes.privacy: (_) => const PrivacyScreen(),
               },
             );
           },

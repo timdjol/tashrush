@@ -24,6 +24,15 @@ class AppLocalizationsKy extends AppLocalizations {
   String get leaderboard => 'Рейтинг';
 
   @override
+  String get personalResults => 'Жеке жыйынтыктар';
+
+  @override
+  String get noResults => 'Жеке тарыхты баштоо үчүн оюнду бүтүрүңүз.';
+
+  @override
+  String get gameResult => 'Оюн';
+
+  @override
   String get settings => 'Жөндөөлөр';
 
   @override
@@ -182,4 +191,42 @@ class AppLocalizationsKy extends AppLocalizations {
 
   @override
   String get achievementUnlocked => 'Жетишкендик ачылды!';
+
+  @override
+  String get privacyPolicy => 'Купуялык';
+
+  @override
+  String get privacyOptions => 'Купуялык жөндөөлөрү';
+
+  @override
+  String get privacyLocalTitle => 'Жергиликтүү оюн маалыматы';
+
+  @override
+  String get privacyLocalBody =>
+      'Упайлар, жөндөөлөр, жетишкендиктер жана активдүү оюн ушул түзмөктө гана сакталат.';
+
+  @override
+  String get privacyAnalyticsTitle => 'Диагностика жана аналитика';
+
+  @override
+  String get privacyAnalyticsBody =>
+      'Firebase жөндөлгөндө оюнду жакшыртуу үчүн жашыруун оюн окуялары жана бузулуу маалыматы жөнөтүлүшү мүмкүн.';
+
+  @override
+  String get privacyAdsTitle => 'Жарнама';
+
+  @override
+  String get privacyAdsBody =>
+      'Google Mobile Ads керектүү макулдуктан кийин түзмөк жана жарнама менен аракеттенүү маалыматын иштетиши мүмкүн. Сыйлык жарнамасы ыктыярдуу.';
+
+  @override
+  String get privacyControlTitle => 'Сиздин тандооңуз';
+
+  @override
+  String get privacyControlBody =>
+      'Үндөрдү, титирөөнү жана билдирмелерди өчүрө аласыз. Жергиликтүү маалымат колдонмонун маалыматы тазаланганда же колдонмо өчүрүлгөндө жок кылынат.';
+
+  @override
+  String get privacyDraftNotice =>
+      'Дүкөнгө чыгаруу үчүн ачык купуялык шилтемеси жана иштетилген кызматтарга туура келген акыркы декларациялар керек.';
 }

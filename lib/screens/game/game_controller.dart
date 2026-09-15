@@ -159,7 +159,11 @@ class GameController extends ChangeNotifier {
         stats.highestCombo > storage.getInt('highestCombo')
             ? stats.highestCombo
             : storage.getInt('highestCombo'));
-    await leaderboard.submit(stats.score);
+    await leaderboard.submit(
+      stats.score,
+      lines: stats.lines,
+      durationSeconds: session.duration.inSeconds,
+    );
     _newlyUnlocked = await achievements.evaluate(stats);
     await storage.remove(_sessionKey(dailyMode));
     await analytics.gameFinished(

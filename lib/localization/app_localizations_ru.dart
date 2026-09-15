@@ -24,6 +24,15 @@ class AppLocalizationsRu extends AppLocalizations {
   String get leaderboard => 'Рейтинг';
 
   @override
+  String get personalResults => 'Личные результаты';
+
+  @override
+  String get noResults => 'Завершите игру, чтобы появилась личная история.';
+
+  @override
+  String get gameResult => 'Игра';
+
+  @override
   String get settings => 'Настройки';
 
   @override
@@ -182,4 +191,42 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get achievementUnlocked => 'Достижение открыто!';
+
+  @override
+  String get privacyPolicy => 'Конфиденциальность';
+
+  @override
+  String get privacyOptions => 'Настройки конфиденциальности';
+
+  @override
+  String get privacyLocalTitle => 'Локальные данные игры';
+
+  @override
+  String get privacyLocalBody =>
+      'Счёт, настройки, достижения и активная игра сохраняются только на этом устройстве.';
+
+  @override
+  String get privacyAnalyticsTitle => 'Диагностика и аналитика';
+
+  @override
+  String get privacyAnalyticsBody =>
+      'После настройки Firebase могут отправляться обезличенные игровые события и сведения о сбоях для улучшения игры.';
+
+  @override
+  String get privacyAdsTitle => 'Реклама';
+
+  @override
+  String get privacyAdsBody =>
+      'Google Mobile Ads может обрабатывать сведения об устройстве и взаимодействии с рекламой после необходимого согласия. Rewarded-реклама добровольна.';
+
+  @override
+  String get privacyControlTitle => 'Ваш выбор';
+
+  @override
+  String get privacyControlBody =>
+      'Можно отключить звуки, вибрацию и уведомления. Локальные данные удаляются при очистке данных приложения или его удалении.';
+
+  @override
+  String get privacyDraftNotice =>
+      'Для публикации нужна публичная ссылка на политику и итоговые декларации, соответствующие включённым сервисам.';
 }

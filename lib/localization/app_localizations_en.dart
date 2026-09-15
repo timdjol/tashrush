@@ -24,6 +24,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get leaderboard => 'Leaderboard';
 
   @override
+  String get personalResults => 'Personal results';
+
+  @override
+  String get noResults => 'Complete a game to start your personal history.';
+
+  @override
+  String get gameResult => 'Game';
+
+  @override
   String get settings => 'Settings';
 
   @override
@@ -181,4 +190,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get achievementUnlocked => 'Achievement unlocked!';
+
+  @override
+  String get privacyPolicy => 'Privacy';
+
+  @override
+  String get privacyOptions => 'Privacy options';
+
+  @override
+  String get privacyLocalTitle => 'Local game data';
+
+  @override
+  String get privacyLocalBody =>
+      'Scores, settings, achievements and active games are saved only on this device.';
+
+  @override
+  String get privacyAnalyticsTitle => 'Diagnostics and analytics';
+
+  @override
+  String get privacyAnalyticsBody =>
+      'When Firebase is configured, anonymous gameplay events and crash diagnostics may be sent to improve the game.';
+
+  @override
+  String get privacyAdsTitle => 'Advertising';
+
+  @override
+  String get privacyAdsBody =>
+      'Google Mobile Ads may process device and ad interaction data after the required consent flow. Rewarded ads are voluntary.';
+
+  @override
+  String get privacyControlTitle => 'Your controls';
+
+  @override
+  String get privacyControlBody =>
+      'You can disable sounds, vibration and notifications. Local game data is removed when the app data is cleared or the app is uninstalled.';
+
+  @override
+  String get privacyDraftNotice =>
+      'Store publication requires a public privacy-policy URL and final declarations matching the enabled services.';
 }

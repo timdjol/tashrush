@@ -6,4 +6,5 @@ abstract final class AppRoutes {
   static const leaderboard = '/leaderboard';
   static const settings = '/settings';
   static const removeAds = '/remove-ads';
+  static const privacy = '/privacy';
 }

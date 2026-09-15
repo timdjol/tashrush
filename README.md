@@ -54,7 +54,7 @@ The game rules do not depend on widgets or Flame rendering:
 - `lib/screens` contains Flutter screens and drag-and-drop interaction.
 - `lib/services` isolates storage, ads, analytics, audio, haptics, daily challenges, achievements, purchases, and leaderboard concerns.
 
-New `CellType` values can be added to the model and handled in `BoardComponent`/`Board` without changing screen business logic. `LeaderboardService`, `PurchaseService`, and `ConsentService` are interfaces so remote providers can replace the local/placeholder implementations.
+New `CellType` values can be added to the model and handled in `BoardComponent`/`Board` without changing screen business logic. `LeaderboardService`, `PurchaseService`, and `ConsentService` are interfaces so remote providers can replace the local/placeholder implementations. The first leaderboard implementation shows only real personal game history; it contains no simulated players.
 
 ## Gameplay
 
@@ -118,13 +118,11 @@ real consent service described below.
 
 ## GDPR, consent, and privacy
 
-`AdService.initializeAfterConsent()` is the only ad initialization entry point. The included `DevelopmentConsentService` allows test ads only outside release builds; release ad initialization stays disabled until this service is replaced. Before production, replace it with a service backed by Google UMP:
+`AdService.initializeAfterConsent()` is the only ad initialization entry point. Debug builds use `DevelopmentConsentService`; production builds use the included `UmpConsentService` and do not load an ad until UMP allows it. Settings exposes the UMP privacy-options form when required.
 
-1. Request/update consent information at startup.
-2. Present the UMP form when required.
-3. Return `true` from `mayRequestAds()` only when ads may be requested.
-4. Add a privacy-options entry point in Settings when UMP reports it as required.
-5. Configure ATT messaging and `NSUserTrackingUsageDescription` only if the chosen iOS ad strategy requires tracking.
+Production ad-unit IDs are supplied through `ADMOB_REWARDED_ANDROID`, `ADMOB_INTERSTITIAL_ANDROID`, `ADMOB_REWARDED_IOS`, and `ADMOB_INTERSTITIAL_IOS` dart defines. A release without IDs keeps ads unavailable instead of accidentally using test inventory. Native AdMob app IDs still need to be replaced in each platform file.
+
+A publication draft is in `docs/PRIVACY_POLICY.md`; the owner must add the publication date/contact and host it at a public HTTPS URL. Use `docs/STORE_PRIVACY_CHECKLIST.md` for Google Play Data safety and App Store privacy preparation.
 
 Do not initialize Mobile Ads before the consent service completes. Review Google Play Data safety and App Store privacy nutrition labels before release.
 
@@ -183,6 +181,12 @@ flutter test
 ```
 
 ## Production checklist
+
+Run the local readiness audit first:
+
+```bash
+./tool/check_release_readiness.sh
+```
 
 - Replace all AdMob test IDs and verify consent behavior in EEA test geography.
 - Add Firebase configuration files and validate Analytics DebugView/Crashlytics test crash.

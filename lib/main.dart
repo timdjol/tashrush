@@ -38,9 +38,12 @@ Future<void> main() async {
   final audio = AudioService();
   await audio.initialize();
   final purchase = PlaceholderPurchaseService();
+  const allowReleaseTestAds = bool.fromEnvironment('ALLOW_TEST_ADS');
   final ads = AdService(
     analytics: analytics,
-    consent: DevelopmentConsentService(),
+    consent: kReleaseMode && !allowReleaseTestAds
+        ? UmpConsentService()
+        : DevelopmentConsentService(),
     storage: storage,
     purchase: purchase,
   );

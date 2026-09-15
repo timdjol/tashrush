@@ -5,6 +5,9 @@
   "dailyChallenge": "Daily Challenge",
   "achievements": "Achievements",
   "leaderboard": "Leaderboard",
+  "personalResults": "Personal results",
+  "noResults": "Complete a game to start your personal history.",
+  "gameResult": "Game",
   "settings": "Settings",
   "best": "Best",
   "score": "Score",
@@ -57,4 +60,15 @@
   ,"themeOsh": "Osh warmth"
   ,"unlocked": "Unlocked"
   ,"achievementUnlocked": "Achievement unlocked!"
+  ,"privacyPolicy": "Privacy"
+  ,"privacyOptions": "Privacy options"
+  ,"privacyLocalTitle": "Local game data"
+  ,"privacyLocalBody": "Scores, settings, achievements and active games are saved only on this device."
+  ,"privacyAnalyticsTitle": "Diagnostics and analytics"
+  ,"privacyAnalyticsBody": "When Firebase is configured, anonymous gameplay events and crash diagnostics may be sent to improve the game."
+  ,"privacyAdsTitle": "Advertising"
+  ,"privacyAdsBody": "Google Mobile Ads may process device and ad interaction data after the required consent flow. Rewarded ads are voluntary."
+  ,"privacyControlTitle": "Your controls"
+  ,"privacyControlBody": "You can disable sounds, vibration and notifications. Local game data is removed when the app data is cleared or the app is uninstalled."
+  ,"privacyDraftNotice": "Store publication requires a public privacy-policy URL and final declarations matching the enabled services."
 }

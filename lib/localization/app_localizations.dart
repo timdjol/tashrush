@@ -130,6 +130,24 @@ abstract class AppLocalizations {
   /// **'Leaderboard'**
   String get leaderboard;
 
+  /// No description provided for @personalResults.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal results'**
+  String get personalResults;
+
+  /// No description provided for @noResults.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete a game to start your personal history.'**
+  String get noResults;
+
+  /// No description provided for @gameResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Game'**
+  String get gameResult;
+
   /// No description provided for @settings.
   ///
   /// In en, this message translates to:
@@ -441,6 +459,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Achievement unlocked!'**
   String get achievementUnlocked;
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get privacyPolicy;
+
+  /// No description provided for @privacyOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy options'**
+  String get privacyOptions;
+
+  /// No description provided for @privacyLocalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Local game data'**
+  String get privacyLocalTitle;
+
+  /// No description provided for @privacyLocalBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Scores, settings, achievements and active games are saved only on this device.'**
+  String get privacyLocalBody;
+
+  /// No description provided for @privacyAnalyticsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagnostics and analytics'**
+  String get privacyAnalyticsTitle;
+
+  /// No description provided for @privacyAnalyticsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'When Firebase is configured, anonymous gameplay events and crash diagnostics may be sent to improve the game.'**
+  String get privacyAnalyticsBody;
+
+  /// No description provided for @privacyAdsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Advertising'**
+  String get privacyAdsTitle;
+
+  /// No description provided for @privacyAdsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Google Mobile Ads may process device and ad interaction data after the required consent flow. Rewarded ads are voluntary.'**
+  String get privacyAdsBody;
+
+  /// No description provided for @privacyControlTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your controls'**
+  String get privacyControlTitle;
+
+  /// No description provided for @privacyControlBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You can disable sounds, vibration and notifications. Local game data is removed when the app data is cleared or the app is uninstalled.'**
+  String get privacyControlBody;
+
+  /// No description provided for @privacyDraftNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Store publication requires a public privacy-policy URL and final declarations matching the enabled services.'**
+  String get privacyDraftNotice;
 }
 
 class _AppLocalizationsDelegate
